@@ -1,0 +1,46 @@
+{
+    "versionLabel": "0.1.0",
+    "uuid": "57d2c4e1-5799-4d2d-8ae1-b22822da119b",
+    "appKeys": {
+        "boat_speed": 5,
+        "wind_speed": 7,
+        "btw": 10,
+        "distance_total": 18,
+        "temp": 17,
+        "sog": 3,
+        "heading_to_steer": 12,
+        "wind_angle": 8,
+        "screen": 0,
+        "lon": 2,
+        "xte": 11,
+        "wpt_lon": 16,
+        "depth": 6,
+        "waypoint": 14,
+        "cog": 4,
+        "distance_reset": 19,
+        "lat": 1,
+        "heading_to_steer_type": 13,
+        "dtw": 9,
+        "wpt_lat": 15
+    },
+    "longName": "Boat Remote",
+    "versionCode": 1,
+    "capabilities": [
+        "configurable"
+    ],
+    "shortName": "Boat Remote",
+    "companyName": "Code With a Smile",
+    "watchapp": {
+        "watchface": false
+    },
+    "resources": {
+        "media": [
+            {
+                "menuIcon": true,
+                "type": "png",
+                "name": "icon_small",
+                "file": "images/icon 24x28.png"
+            }
+        ]
+    }
+}
