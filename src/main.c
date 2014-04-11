@@ -193,7 +193,7 @@ static void out_failed_handler(DictionaryIterator *failed, AppMessageResult reas
   APP_LOG(APP_LOG_LEVEL_DEBUG, "App Message Failed to Send!");
 }
 
-static void send_cmd(void) {
+static void send_current_screen(void) {
 	  //APP_LOG(APP_LOG_LEVEL_DEBUG, "Sending key %d", CURRENT_SCREEN_KEY);
 	  //APP_LOG(APP_LOG_LEVEL_DEBUG, "Sending value %d", current_screen);
       Tuplet value = TupletInteger(CURRENT_SCREEN_KEY, current_screen);
@@ -213,7 +213,7 @@ static void send_cmd(void) {
 
 static void handle_tick(struct tm *tick_time, TimeUnits units_changed) {
 	//APP_LOG(APP_LOG_LEVEL_DEBUG, "Tick");
-    send_cmd();
+    send_current_screen();
 	//APP_LOG(APP_LOG_LEVEL_DEBUG, "Tock");
 }
 
@@ -254,7 +254,7 @@ void select_click_handler(ClickRecognizerRef recognizer, void *context) {
 		window_stack_pop(log_window);
 		window_stack_push(gps_window, true);		
 	}
-	send_cmd();
+	send_current_screen();
  }
 
 void config_provider(void *context) {
@@ -341,7 +341,7 @@ static void init(void) {
 	  current_screen = SCREEN_GPS_KEY;
       window_stack_push(gps_window, animated);
 	
-  	  send_cmd();
+  	  send_current_screen();
 }
 
 static void deinit(void) {
