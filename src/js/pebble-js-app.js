@@ -34,6 +34,7 @@ function toggleLights(){
     }	
 	//console.log("url = " + url);
     req.open('POST', url, true);
+	req.send(null);
 }
 
 Pebble.addEventListener("appmessage",
@@ -58,35 +59,34 @@ Pebble.addEventListener("appmessage",
     req.onload = function(recData) {
       if (req.readyState == 4 && req.status == 200) {
         if(req.status == 200) {
-          //console.log(req.responseText);
           var result = JSON.parse(req.responseText);
-          //console.log(result); 
+			 
           switch(currentScreen) {
-			case 1:
+			case 0:
               Pebble.sendAppMessage({ "lat":result.lat, "lon":result.lon, 
                                       "sog":result.sog, "cog":result.cog});
               break;
-			case 2:
+			case 1:
               Pebble.sendAppMessage({ "boat_speed":result.boat_speed, "depth":result.depth, 
                                       "wind_speed":result.wind_speed, "wind_angle":result.wind_angle});
               break;
-            case 3:
+            case 2:
               Pebble.sendAppMessage({ "dtw":(result.dtw + ' ' + result.dtw_unit), "btw":result.btw, 
                                       "sog":result.sog, "cog":result.cog});
               break;
-			case 4:
+			case 3:
               Pebble.sendAppMessage({ "dtw":(result.dtw + ' ' + result.dtw_unit), "btw":result.btw, 
                                       "xte":(result.xte + ' ' + result.xte_unit), 
                                       "heading_to_steer":(result.heading_to_steer + ' ' + result.dir_to_steer),
                                       "heading_to_steer_type":result.heading_to_steer_type});
               break;
-			case 5:
+			case 4:
               Pebble.sendAppMessage({ "dtw":(result.dtw + ' ' + result.dtw_unit), "btw":result.btw, 
                                       "waypoint":result.waypoint, 
                                       "wpt_lat":(result.wpt_lat + result.wpt_lat_dir),
                                       "wpt_lon":(result.wpt_lon + result.wpt_lon_dir)});
               break;
-			case 6:
+			case 5:
               Pebble.sendAppMessage({ "temp":(result.temp + ' ' + result.temp_unit), 
                                       "distance_total":result.distance_total, 
                                       "distance_reset":result.distance_reset});

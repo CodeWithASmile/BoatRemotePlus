@@ -63,9 +63,8 @@ void show_server_error(){
 }
 
 static void in_received_handler(DictionaryIterator *iter, void *context) {
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "Received message");
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "Received message, current screen: %d", current_screen);
   Tuple *server_error_tuple = dict_find(iter, SERVER_ERROR_KEY); 
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "Server error key %d", SERVER_ERROR_KEY);
   //APP_LOG(APP_LOG_LEVEL_DEBUG, "Server error received %s", server_error_tuple->value->cstring);
   if (server_error_tuple){
 	server_error = atoi(server_error_tuple->value->cstring);
