@@ -23,10 +23,29 @@ Pebble.addEventListener("webviewclosed", function(e) {
   console.log("Options = " + JSON.stringify(options));
 });
 
+function toggleLights(){
+	console.log("Toggling lights FROM JS!"); 
+	var req = new XMLHttpRequest();
+	var server = localStorage.getItem("server");
+    var port = localStorage.getItem("port");
+	var url = server + ':'+ port +'/toggle_lights';
+    if (server.substr(0,7)  != 'http://'){
+        url = 'http://' + url;
+    }	
+	//console.log("url = " + url);
+    req.open('POST', url, true);
+}
+
 Pebble.addEventListener("appmessage",
   function(recMessage) {
+	console.log("received message: " + JSON.stringify(recMessage.payload, null, 2));
+	if (recMessage.payload.toggle_lights){
+      toggleLights();
+	}
+	else
+	{
 	var currentScreen = recMessage.payload.screen;
-	console.log("received message: screen: " + recMessage.payload.screen);
+	//console.log("received message: screen: " + recMessage.payload.screen);
 	var req = new XMLHttpRequest();
 	var server = localStorage.getItem("server");
     var port = localStorage.getItem("port");
@@ -87,5 +106,6 @@ Pebble.addEventListener("appmessage",
 	Pebble.sendAppMessage({"server_error": "1"});
   };
   req.send(null);
+  }
   }
 );

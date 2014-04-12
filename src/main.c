@@ -7,14 +7,12 @@
 #include "manual.h"
 #include "waypoint.h"
 #include "log.h"
+#include "lights.h"
 	
-static Window *message_window;
-static Window *gps_window;
-static Window *sailing_window;
-static Window *navigation_window;
-static Window *manual_window;
-static Window *waypoint_window;
-static Window *log_window;
+#define VIEW_WINDOW_COUNT 7
+
+Window* message_window;
+Window* view_windows [VIEW_WINDOW_COUNT];
 
 int current_screen;
 int server_error;
@@ -38,21 +36,25 @@ enum DataKey {
   BOAT_WPT_LON_KEY = 0x10,
   BOAT_TEMP_KEY = 0x11,
   BOAT_DISTANCE_TOTAL_KEY = 0x12,
-  BOAT_DISTANCE_RESET_KEY = 0x13
+  BOAT_DISTANCE_RESET_KEY = 0x13,
 };
 
 enum ScreenKey {
-  SCREEN_GPS_KEY = 0x1,
-  SCREEN_SAILING_KEY = 0x2,
-  SCREEN_NAVIGATION_KEY = 0x3,
-  SCREEN_MANUAL_KEY = 0x4,
-  SCREEN_WAYPOINT_KEY = 0x5,
-  SCREEN_LOG_KEY = 0x6
+  SCREEN_GPS_KEY = 0x0,
+  SCREEN_SAILING_KEY = 0x1,
+  SCREEN_NAVIGATION_KEY = 0x2,
+  SCREEN_MANUAL_KEY = 0x3,
+  SCREEN_WAYPOINT_KEY = 0x4,
+  SCREEN_LOG_KEY = 0x5,
+  SCREEN_LIGHTS_KEY = 0x6
 };
+
+int view_windows_enable [VIEW_WINDOW_COUNT] = {1,1,1,1,1,1};
 
 enum OtherKey {
   CURRENT_SCREEN_KEY = 0x0,
-  SERVER_ERROR_KEY = 0x14
+  SERVER_ERROR_KEY = 0x14,
+  TOGGLE_LIGHTS_KEY = 0x15
 };
 
 void show_server_error(){
@@ -211,57 +213,73 @@ static void send_current_screen(void) {
       app_message_outbox_send();
 }
 
+static void toggle_lights(void) {
+	  APP_LOG(APP_LOG_LEVEL_DEBUG, "Toggling lights");
+	  //APP_LOG(APP_LOG_LEVEL_DEBUG, "Sending value %d", current_screen);
+      Tuplet value = TupletInteger(TOGGLE_LIGHTS_KEY, 1);
+
+      DictionaryIterator *iter;
+      app_message_outbox_begin(&iter);
+
+      if (iter == NULL) {
+        return;
+      }
+
+      dict_write_tuplet(iter, &value);
+      dict_write_end(iter);
+
+      app_message_outbox_send();
+}
+
 static void handle_tick(struct tm *tick_time, TimeUnits units_changed) {
 	//APP_LOG(APP_LOG_LEVEL_DEBUG, "Tick");
-    send_current_screen();
+	if (current_screen != SCREEN_LIGHTS_KEY){
+    	send_current_screen();
+	}
 	//APP_LOG(APP_LOG_LEVEL_DEBUG, "Tock");
 }
 
-void select_click_handler(ClickRecognizerRef recognizer, void *context) {
-	if (current_screen == SCREEN_GPS_KEY) {
-		//APP_LOG(APP_LOG_LEVEL_DEBUG, "Currently on gps screen - switching");
-		current_screen = SCREEN_SAILING_KEY;
-		window_stack_pop(gps_window);
-		window_stack_push(sailing_window, true);
+int get_next_screen(int currentScreen) {
+	APP_LOG(APP_LOG_LEVEL_DEBUG, "Leaving %d", currentScreen);
+	return (currentScreen + 1) % VIEW_WINDOW_COUNT;
+}
+
+int get_previous_screen(int currentScreen) {
+	APP_LOG(APP_LOG_LEVEL_DEBUG, "Leaving %d", currentScreen);
+	return (currentScreen - 1 + VIEW_WINDOW_COUNT) % VIEW_WINDOW_COUNT;
+}
+
+void navigate_up_handler(ClickRecognizerRef recognizer, void *context){
+	int previousScreen = get_previous_screen(current_screen);
+	window_stack_pop(view_windows[current_screen]);
+	window_stack_push(view_windows[previousScreen], true);
+	current_screen = previousScreen;
+}
+
+void navigate_down_handler(ClickRecognizerRef recognizer, void *context){
+	int nextScreen = get_next_screen(current_screen);
+	window_stack_pop(view_windows[current_screen]);
+	window_stack_push(view_windows[nextScreen], true);
+	current_screen = nextScreen;
+}
+
+void select_handler(ClickRecognizerRef recognizer, void *context){
+	if (current_screen == SCREEN_LIGHTS_KEY){
+		toggle_lights();
 	}
-	else if (current_screen == SCREEN_SAILING_KEY) {
-		//APP_LOG(APP_LOG_LEVEL_DEBUG, "Currently on sailing screen - switching");
-		current_screen = SCREEN_NAVIGATION_KEY;
-		window_stack_pop(sailing_window);
-		window_stack_push(navigation_window, true);
-	}
-	else if (current_screen == SCREEN_NAVIGATION_KEY) {
-		//APP_LOG(APP_LOG_LEVEL_DEBUG, "Currently on navigation screen - switching");
-		current_screen = SCREEN_MANUAL_KEY;
-		window_stack_pop(navigation_window);
-		window_stack_push(manual_window, true);
-	}
-	else if (current_screen == SCREEN_MANUAL_KEY) {
-		//APP_LOG(APP_LOG_LEVEL_DEBUG, "Currently on manual screen - switching");
-		current_screen = SCREEN_WAYPOINT_KEY;
-		window_stack_pop(manual_window);
-		window_stack_push(waypoint_window, true);		
-	}
-	else if (current_screen == SCREEN_WAYPOINT_KEY) {
-		//APP_LOG(APP_LOG_LEVEL_DEBUG, "Currently on waypoint screen - switching");
-		current_screen = SCREEN_LOG_KEY;
-		window_stack_pop(waypoint_window);
-		window_stack_push(log_window, true);		
-	}
-	else if (current_screen == SCREEN_LOG_KEY) {
-		//APP_LOG(APP_LOG_LEVEL_DEBUG, "Currently on log screen - switching");
-		current_screen = SCREEN_GPS_KEY;
-		window_stack_pop(log_window);
-		window_stack_push(gps_window, true);		
-	}
-	send_current_screen();
- }
+}
+
 
 void config_provider(void *context) {
-   window_single_click_subscribe(BUTTON_ID_SELECT, select_click_handler);
+   //window_single_click_subscribe(BUTTON_ID_SELECT, select_click_handler);
+   window_single_click_subscribe(BUTTON_ID_DOWN, navigate_down_handler);
+   window_single_click_subscribe(BUTTON_ID_UP, navigate_up_handler);
+   window_single_click_subscribe(BUTTON_ID_SELECT, select_handler);
  }
 
+
 static void init(void) {
+	  Window* w;
 	  tick_timer_service_subscribe(SECOND_UNIT, handle_tick);
 	
 	  message_window = window_create();
@@ -273,60 +291,76 @@ static void init(void) {
       });
 	
       //APP_LOG(APP_LOG_LEVEL_DEBUG, "Creating GPS window");
-	  gps_window = window_create();
-      window_set_background_color(gps_window, GColorBlack);
-      window_set_fullscreen(gps_window, true);
-      window_set_window_handlers(gps_window, (WindowHandlers) {
+	  w = window_create();
+      window_set_background_color(w, GColorBlack);
+      window_set_fullscreen(w, true);
+      window_set_window_handlers(w, (WindowHandlers) {
         .load = gps_window_load,
         .unload = gps_window_unload
       });
-	  window_set_click_config_provider(gps_window, config_provider);
+	  window_set_click_config_provider(w, config_provider);
+	  view_windows[SCREEN_GPS_KEY] = w;
 	
 	  //APP_LOG(APP_LOG_LEVEL_DEBUG, "Creating sailing window");  
-	  sailing_window = window_create();
-      window_set_background_color(sailing_window, GColorBlack);
-      window_set_fullscreen(sailing_window, true);
-      window_set_window_handlers(sailing_window, (WindowHandlers) {
+	  w = window_create();
+      window_set_background_color(w, GColorBlack);
+      window_set_fullscreen(w, true);
+      window_set_window_handlers(w, (WindowHandlers) {
         .load = sailing_window_load,
         .unload = sailing_window_unload
       });
-	  window_set_click_config_provider(sailing_window, config_provider);
+	  window_set_click_config_provider(w, config_provider);
+	  view_windows[SCREEN_SAILING_KEY] = w;
 	
-	  navigation_window = window_create();
-      window_set_background_color(navigation_window, GColorBlack);
-      window_set_fullscreen(navigation_window, true);
-      window_set_window_handlers(navigation_window, (WindowHandlers) {
+	  w = window_create();
+      window_set_background_color(w, GColorBlack);
+      window_set_fullscreen(w, true);
+      window_set_window_handlers(w, (WindowHandlers) {
         .load = navigation_window_load,
         .unload = navigation_window_unload
       });
-	  window_set_click_config_provider(navigation_window, config_provider);
+	  window_set_click_config_provider(w, config_provider);
+	  view_windows[SCREEN_NAVIGATION_KEY] = w;
 	
-	  manual_window = window_create();
-      window_set_background_color(manual_window, GColorBlack);
-      window_set_fullscreen(manual_window, true);
-      window_set_window_handlers(manual_window, (WindowHandlers) {
+	  w = window_create();
+      window_set_background_color(w, GColorBlack);
+      window_set_fullscreen(w, true);
+      window_set_window_handlers(w, (WindowHandlers) {
         .load = manual_window_load,
         .unload = manual_window_unload
       });
-	  window_set_click_config_provider(manual_window, config_provider);
+	  window_set_click_config_provider(w, config_provider);
+	  view_windows[SCREEN_MANUAL_KEY] = w;
 	
-	  waypoint_window = window_create();
-      window_set_background_color(waypoint_window, GColorBlack);
-      window_set_fullscreen(waypoint_window, true);
-      window_set_window_handlers(waypoint_window, (WindowHandlers) {
+	  w = window_create();
+      window_set_background_color(w, GColorBlack);
+      window_set_fullscreen(w, true);
+      window_set_window_handlers(w, (WindowHandlers) {
         .load = waypoint_window_load,
         .unload = waypoint_window_unload
       });
-	  window_set_click_config_provider(waypoint_window, config_provider);
+	  window_set_click_config_provider(w, config_provider);
+	  view_windows[SCREEN_WAYPOINT_KEY] = w;
 	
-	  log_window = window_create();
-      window_set_background_color(log_window, GColorBlack);
-      window_set_fullscreen(log_window, true);
-      window_set_window_handlers(log_window, (WindowHandlers) {
+	  w = window_create();
+      window_set_background_color(w, GColorBlack);
+      window_set_fullscreen(w, true);
+      window_set_window_handlers(w, (WindowHandlers) {
         .load = log_window_load,
         .unload = log_window_unload
       });
-	  window_set_click_config_provider(log_window, config_provider);
+	  window_set_click_config_provider(w, config_provider);
+	  view_windows[SCREEN_LOG_KEY] = w;
+	
+	  w = window_create();
+      window_set_background_color(w, GColorBlack);
+      window_set_fullscreen(w, true);
+      window_set_window_handlers(w, (WindowHandlers) {
+        .load = lights_window_load,
+        .unload = lights_window_unload
+      });
+	  window_set_click_config_provider(w, config_provider);
+	  view_windows[SCREEN_LIGHTS_KEY] = w;
 
 	  app_message_register_inbox_received(in_received_handler);
       app_message_register_inbox_dropped(in_dropped_handler);
@@ -336,23 +370,21 @@ static void init(void) {
       const int outbound_size = 128;
       app_message_open(inbound_size, outbound_size);
 
-      APP_LOG(APP_LOG_LEVEL_DEBUG, "Pushing screen %d", current_screen);
 	  const bool animated = true;
 	  current_screen = SCREEN_GPS_KEY;
-      window_stack_push(gps_window, animated);
+	  APP_LOG(APP_LOG_LEVEL_DEBUG, "Pushing screen %d", current_screen);
+      window_stack_push(view_windows[current_screen], animated);
 	
   	  send_current_screen();
 }
 
 static void deinit(void) {
+	  int i;
 	  tick_timer_service_unsubscribe();
 	  window_destroy(message_window);
-      window_destroy(gps_window);
-	  window_destroy(sailing_window);
-	  window_destroy(navigation_window);
-	  window_destroy(manual_window);
-	  window_destroy(waypoint_window);
-	  window_destroy(log_window);
+	  
+	  for (i=0; i < VIEW_WINDOW_COUNT; i++) 
+		  window_destroy(view_windows[i]);
 }
 
 int main(void) {
