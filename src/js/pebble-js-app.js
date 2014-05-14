@@ -71,23 +71,21 @@ Pebble.addEventListener("appmessage",
                                       "wind_speed":result.wind_speed, "wind_angle":result.wind_angle});
               break;
             case 2:
-              Pebble.sendAppMessage({ "dtw":(result.dtw + ' ' + result.dtw_unit), "btw":result.btw, 
-                                      "sog":result.sog, "cog":result.cog});
+              Pebble.sendAppMessage({ "dtw":result.dtw, "btw":result.btw,
+									  "sog":result.sog, "cog":result.cog});
               break;
 			case 3:
-              Pebble.sendAppMessage({ "dtw":(result.dtw + ' ' + result.dtw_unit), "btw":result.btw, 
-                                      "xte":(result.xte + ' ' + result.xte_unit), 
-                                      "heading_to_steer":(result.heading_to_steer + ' ' + result.dir_to_steer),
-                                      "heading_to_steer_type":result.heading_to_steer_type});
+              Pebble.sendAppMessage({ "dtw":result.dtw, "btw":result.btw, 
+                                      "xte":result.xte});
               break;
 			case 4:
-              Pebble.sendAppMessage({ "dtw":(result.dtw + ' ' + result.dtw_unit), "btw":result.btw, 
+              Pebble.sendAppMessage({ "dtw":result.dtw, "btw":result.btw, 
                                       "waypoint":result.waypoint, 
-                                      "wpt_lat":(result.wpt_lat + result.wpt_lat_dir),
-                                      "wpt_lon":(result.wpt_lon + result.wpt_lon_dir)});
+                                      "wpt_lat":result.wpt_lat,
+                                      "wpt_lon":result.wpt_lon});
               break;
 			case 5:
-              Pebble.sendAppMessage({ "temp":(result.temp + ' ' + result.temp_unit), 
+              Pebble.sendAppMessage({ "temp":result.temp, 
                                       "distance_total":result.distance_total, 
                                       "distance_reset":result.distance_reset});
           }

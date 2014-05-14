@@ -29,8 +29,6 @@ enum DataKey {
   BOAT_DTW_KEY = 0x9,
   BOAT_BTW_KEY = 0xA,
   BOAT_XTE_KEY = 0xB,
-  BOAT_HEADING_TO_STEER_KEY = 0xC,
-  BOAT_HEADING_TO_STEER_TYPE_KEY = 0xD,
   BOAT_WAYPOINT_KEY = 0xE,
   BOAT_WPT_LAT_KEY = 0xF,
   BOAT_WPT_LON_KEY = 0x10,
@@ -83,8 +81,6 @@ static void in_received_handler(DictionaryIterator *iter, void *context) {
   Tuple *dtw_tuple = dict_find(iter, BOAT_DTW_KEY);
   Tuple *btw_tuple = dict_find(iter, BOAT_BTW_KEY);
   Tuple *xte_tuple = dict_find(iter, BOAT_XTE_KEY);
-  Tuple *heading_to_steer_tuple = dict_find(iter, BOAT_HEADING_TO_STEER_KEY);
-  Tuple *heading_to_steer_type_tuple = dict_find(iter, BOAT_HEADING_TO_STEER_TYPE_KEY);
   Tuple *waypoint_tuple = dict_find(iter, BOAT_WAYPOINT_KEY);
   Tuple *wpt_lat_tuple = dict_find(iter, BOAT_WPT_LAT_KEY);
   Tuple *wpt_lon_tuple = dict_find(iter, BOAT_WPT_LON_KEY);
@@ -146,12 +142,6 @@ static void in_received_handler(DictionaryIterator *iter, void *context) {
     }
 	if (xte_tuple) {
       set_manual_xte(xte_tuple);
-    }
-	if (heading_to_steer_tuple) {
-      set_manual_heading_to_steer(heading_to_steer_tuple);
-    }
-	if (heading_to_steer_type_tuple) {
-      set_manual_heading_to_steer_type(heading_to_steer_type_tuple);
     }
   }
   if (current_screen == SCREEN_WAYPOINT_KEY){
