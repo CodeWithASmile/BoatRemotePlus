@@ -8,13 +8,17 @@
 #include "waypoint.h"
 #include "log.h"
 #include "lights.h"
+#include "menu.h"
 	
 #define VIEW_WINDOW_COUNT 7
 
 Window* message_window;
+Window* menu_window;
 Window* view_windows [VIEW_WINDOW_COUNT];
 
 int current_screen;
+int last_screen;
+int current_menu;
 int server_error;
 
 enum DataKey {
@@ -38,19 +42,25 @@ enum DataKey {
 };
 
 enum ScreenKey {
-  SCREEN_GPS_KEY = 0x0,
-  SCREEN_SAILING_KEY = 0x1,
-  SCREEN_NAVIGATION_KEY = 0x2,
-  SCREEN_MANUAL_KEY = 0x3,
-  SCREEN_WAYPOINT_KEY = 0x4,
-  SCREEN_LOG_KEY = 0x5,
-  SCREEN_LIGHTS_KEY = 0x6
+  SCREEN_MENU_KEY = -1,
+  SCREEN_GPS_KEY = 0,
+  SCREEN_SAILING_KEY = 1,
+  SCREEN_NAVIGATION_KEY = 2,
+  SCREEN_MANUAL_KEY = 3,
+  SCREEN_WAYPOINT_KEY = 4,
+  SCREEN_LOG_KEY = 5,
+  SCREEN_LIGHTS_KEY = 6
+};
+
+enum MenuKey {
+  MENU_VIEW_KEY = 0x0,
 };
 
 int view_windows_enable [VIEW_WINDOW_COUNT] = {1,1,1,1,1,1};
 
 enum OtherKey {
   CURRENT_SCREEN_KEY = 0x0,
+  CURRENT_MENU_KEY = 0x16,
   SERVER_ERROR_KEY = 0x14,
   TOGGLE_LIGHTS_KEY = 0x15
 };
@@ -222,8 +232,10 @@ static void toggle_lights(void) {
 
 static void handle_tick(struct tm *tick_time, TimeUnits units_changed) {
 	//APP_LOG(APP_LOG_LEVEL_DEBUG, "Tick");
-	if (current_screen != SCREEN_LIGHTS_KEY){
-    	send_current_screen();
+	if (current_screen != SCREEN_LIGHTS_KEY) {
+		if (current_screen != SCREEN_MENU_KEY){
+    		send_current_screen();
+		}
 	}
 	//APP_LOG(APP_LOG_LEVEL_DEBUG, "Tock");
 }
@@ -238,18 +250,31 @@ int get_previous_screen(int currentScreen) {
 	return (currentScreen - 1 + VIEW_WINDOW_COUNT) % VIEW_WINDOW_COUNT;
 }
 
+void change_screen(int nextScreen){
+	APP_LOG(APP_LOG_LEVEL_DEBUG, "Current_screen %d", current_screen);
+	APP_LOG(APP_LOG_LEVEL_DEBUG, "Next_screen %d", nextScreen);
+	if(current_screen == SCREEN_MENU_KEY){
+		//APP_LOG(APP_LOG_LEVEL_DEBUG, "Popping menu_window");
+		window_stack_pop(menu_window);
+	}
+	else{
+		//APP_LOG(APP_LOG_LEVEL_DEBUG, "Popping screen %d", current_screen);
+		window_stack_pop(view_windows[current_screen]);
+	}
+	//APP_LOG(APP_LOG_LEVEL_DEBUG, "Pushing screen %d", nextScreen);
+	window_stack_push(view_windows[nextScreen], true);
+	current_screen = nextScreen;
+	last_screen = current_screen;
+}
+
 void navigate_up_handler(ClickRecognizerRef recognizer, void *context){
 	int previousScreen = get_previous_screen(current_screen);
-	window_stack_pop(view_windows[current_screen]);
-	window_stack_push(view_windows[previousScreen], true);
-	current_screen = previousScreen;
+	change_screen(previousScreen);
 }
 
 void navigate_down_handler(ClickRecognizerRef recognizer, void *context){
 	int nextScreen = get_next_screen(current_screen);
-	window_stack_pop(view_windows[current_screen]);
-	window_stack_push(view_windows[nextScreen], true);
-	current_screen = nextScreen;
+	change_screen(nextScreen);
 }
 
 void select_handler(ClickRecognizerRef recognizer, void *context){
@@ -258,14 +283,20 @@ void select_handler(ClickRecognizerRef recognizer, void *context){
 	}
 }
 
+void load_menu(){
+	window_stack_pop(view_windows[current_screen]);
+	window_stack_push(menu_window, true);
+	current_screen=SCREEN_MENU_KEY;
+	menu_set_selected(last_screen);
+}
+
 
 void config_provider(void *context) {
-   //window_single_click_subscribe(BUTTON_ID_SELECT, select_click_handler);
    window_single_click_subscribe(BUTTON_ID_DOWN, navigate_down_handler);
    window_single_click_subscribe(BUTTON_ID_UP, navigate_up_handler);
    window_single_click_subscribe(BUTTON_ID_SELECT, select_handler);
+   window_single_click_subscribe(BUTTON_ID_BACK, load_menu);
  }
-
 
 static void init(void) {
 	  Window* w;
@@ -350,6 +381,14 @@ static void init(void) {
       });
 	  window_set_click_config_provider(w, config_provider);
 	  view_windows[SCREEN_LIGHTS_KEY] = w;
+	
+	  menu_window = window_create();
+      // Setup the window handlers
+	  window_set_window_handlers(menu_window, (WindowHandlers){
+    	.load = menu_window_load,
+		.unload = menu_window_unload
+      });
+	  menu_set_change_screen_function(change_screen);
 
 	  app_message_register_inbox_received(in_received_handler);
       app_message_register_inbox_dropped(in_dropped_handler);
@@ -360,20 +399,31 @@ static void init(void) {
       app_message_open(inbound_size, outbound_size);
 
 	  const bool animated = true;
-	  current_screen = SCREEN_GPS_KEY;
-	  APP_LOG(APP_LOG_LEVEL_DEBUG, "Pushing screen %d", current_screen);
-      window_stack_push(view_windows[current_screen], animated);
-	
-  	  send_current_screen();
+	  //APP_LOG(APP_LOG_LEVEL_DEBUG, "Pushing screen %d", current_screen);
+      //window_stack_push(view_windows[current_screen], animated);
+	  window_stack_push(menu_window, animated); 
+	  current_screen = SCREEN_MENU_KEY;
+	  last_screen = persist_exists(54321) ? persist_read_int(54321) : SCREEN_GPS_KEY;
+	  current_menu = persist_exists(54322) ? persist_read_int(54322) : MENU_VIEW_KEY;	
+	  APP_LOG(APP_LOG_LEVEL_DEBUG, "Persistent Read %d=%d", 54321,
+			  last_screen);
+	  menu_set_selected(last_screen);
 }
 
 static void deinit(void) {
-	  int i;
+	  int i, check;
 	  tick_timer_service_unsubscribe();
 	  window_destroy(message_window);
+	  window_destroy(menu_window);
 	  
 	  for (i=0; i < VIEW_WINDOW_COUNT; i++) 
-		  window_destroy(view_windows[i]);
+		  window_destroy(view_windows[i]); 
+	  check = persist_write_int(54321, last_screen);
+	  APP_LOG(APP_LOG_LEVEL_DEBUG, "Persisting %d=%d, status %d", 54321,
+			  last_screen, check);
+      check = persist_write_int(54322, current_menu);
+	  APP_LOG(APP_LOG_LEVEL_DEBUG, "Persisting %d=%d, status %d", 54322,
+	  		  current_menu, check);
 }
 
 int main(void) {
