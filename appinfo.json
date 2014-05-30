@@ -1,47 +1,48 @@
 {
+    "longName": "Boat Remote",
+    "companyName": "Code With a Smile",
+    "uuid": "57d2c4e1-5799-4d2d-8ae1-b22822da119b",
     "capabilities": [
         "configurable"
     ],
-    "uuid": "57d2c4e1-5799-4d2d-8ae1-b22822da119b",
+    "versionLabel": "0.1.0",
+    "appKeys": {
+        "server_error": 2,
+        "drift": 117,
+        "distance_reset": 116,
+        "screen": 0,
+        "menu": 1,
+        "anchor_watch": 202,
+        "temp": 114,
+        "distance_total": 115,
+        "btw": 110,
+        "wind_speed": 107,
+        "wind_angle": 108,
+        "cog": 104,
+        "depth": 106,
+        "dtw": 109,
+        "wpt_lat": 112,
+        "lat": 101,
+        "sog": 103,
+        "boat_speed": 105,
+        "wpt_lon": 113,
+        "toggle_lights": 201,
+        "lon": 102,
+        "waypoint": 111
+    },
     "resources": {
         "media": [
             {
-                "menuIcon": true,
+                "file": "images/icon 24x28.png",
                 "name": "icon_small",
                 "type": "png",
-                "file": "images/icon 24x28.png"
+                "menuIcon": true
             }
         ]
-    },
-    "longName": "Boat Remote",
-    "versionLabel": "0.1.0",
-    "companyName": "Code With a Smile",
-    "versionCode": 1,
-    "appKeys": {
-        "heading_to_steer": 12,
-        "boat_speed": 5,
-        "lon": 2,
-        "wpt_lon": 16,
-        "wind_angle": 8,
-        "waypoint": 14,
-        "wind_speed": 7,
-        "wpt_lat": 15,
-        "sog": 3,
-        "xte": 11,
-        "dtw": 9,
-        "cog": 4,
-        "screen": 0,
-        "lat": 1,
-        "btw": 10,
-        "distance_reset": 19,
-        "distance_total": 18,
-        "toggle_lights": 21,
-        "temp": 17,
-        "heading_to_steer_type": 13,
-        "depth": 6
     },
     "watchapp": {
         "watchface": false
     },
-    "shortName": "Boat Remote"
+    "shortName": "Boat Remote",
+    "versionCode": 1
 }

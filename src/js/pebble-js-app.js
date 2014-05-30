@@ -37,11 +37,28 @@ function toggleLights(){
 	req.send(null);
 }
 
+function setAnchorWatch(){
+	console.log("Setting Anchor Watch FROM JS!"); 
+	var req = new XMLHttpRequest();
+	var server = localStorage.getItem("server");
+    var port = localStorage.getItem("port");
+	var url = server + ':'+ port +'/set_anchor_watch';
+    if (server.substr(0,7)  != 'http://'){
+        url = 'http://' + url;
+    }	
+	//console.log("url = " + url);
+    req.open('POST', url, true);
+	req.send(null);
+}
+
 Pebble.addEventListener("appmessage",
   function(recMessage) {
 	console.log("received message: " + JSON.stringify(recMessage.payload, null, 2));
 	if (recMessage.payload.toggle_lights){
       toggleLights();
+	}
+	else if (recMessage.payload.anchor_watch){
+      set_anchor_watch();
 	}
 	else
 	{
@@ -76,18 +93,16 @@ Pebble.addEventListener("appmessage",
               break;
 			case 3:
               Pebble.sendAppMessage({ "dtw":result.dtw, "btw":result.btw, 
-                                      "xte":result.xte});
-              break;
-			case 4:
-              Pebble.sendAppMessage({ "dtw":result.dtw, "btw":result.btw, 
                                       "waypoint":result.waypoint, 
                                       "wpt_lat":result.wpt_lat,
                                       "wpt_lon":result.wpt_lon});
               break;
-			case 5:
+			case 4:
               Pebble.sendAppMessage({ "temp":result.temp, 
                                       "distance_total":result.distance_total, 
                                       "distance_reset":result.distance_reset});
+			case 5:
+              Pebble.sendAppMessage({ "drift":result.drift});
           }
 		}
         else { 

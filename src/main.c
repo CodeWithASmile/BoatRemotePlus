@@ -4,11 +4,12 @@
 #include "gps.h"
 #include "sailing.h"
 #include "navigation.h"
-#include "manual.h"
 #include "waypoint.h"
 #include "log.h"
+#include "anchor_watch.h"
 #include "lights.h"
 #include "menu.h"
+#include "keys.h"
 	
 #define VIEW_WINDOW_COUNT 7
 
@@ -21,49 +22,21 @@ int last_screen;
 int current_menu;
 int server_error;
 
-enum DataKey {
-  BOAT_LAT_KEY = 0x1,
-  BOAT_LON_KEY = 0x2,
-  BOAT_SOG_KEY = 0x3,
-  BOAT_COG_KEY = 0x4,
-  BOAT_BOAT_SPEED_KEY = 0x5,
-  BOAT_DEPTH_KEY = 0x6,
-  BOAT_WIND_SPEED_KEY = 0x7,
-  BOAT_WIND_ANGLE_KEY = 0x8,
-  BOAT_DTW_KEY = 0x9,
-  BOAT_BTW_KEY = 0xA,
-  BOAT_XTE_KEY = 0xB,
-  BOAT_WAYPOINT_KEY = 0xE,
-  BOAT_WPT_LAT_KEY = 0xF,
-  BOAT_WPT_LON_KEY = 0x10,
-  BOAT_TEMP_KEY = 0x11,
-  BOAT_DISTANCE_TOTAL_KEY = 0x12,
-  BOAT_DISTANCE_RESET_KEY = 0x13,
-};
+//Data Keys are now stored in helpers.c
 
 enum ScreenKey {
+  SCREEN_MESSAGE_KEY = -2,
   SCREEN_MENU_KEY = -1,
   SCREEN_GPS_KEY = 0,
   SCREEN_SAILING_KEY = 1,
   SCREEN_NAVIGATION_KEY = 2,
-  SCREEN_MANUAL_KEY = 3,
-  SCREEN_WAYPOINT_KEY = 4,
-  SCREEN_LOG_KEY = 5,
+  SCREEN_WAYPOINT_KEY = 3,
+  SCREEN_LOG_KEY = 4,
+  SCREEN_ANCHOR_WATCH_KEY = 5,
   SCREEN_LIGHTS_KEY = 6
 };
 
-enum MenuKey {
-  MENU_VIEW_KEY = 0x0,
-};
-
 int view_windows_enable [VIEW_WINDOW_COUNT] = {1,1,1,1,1,1};
-
-enum OtherKey {
-  CURRENT_SCREEN_KEY = 0x0,
-  CURRENT_MENU_KEY = 0x16,
-  SERVER_ERROR_KEY = 0x14,
-  TOGGLE_LIGHTS_KEY = 0x15
-};
 
 void show_server_error(){
 	set_message("Server Error");
@@ -77,112 +50,27 @@ static void in_received_handler(DictionaryIterator *iter, void *context) {
   if (server_error_tuple){
 	server_error = atoi(server_error_tuple->value->cstring);
 	APP_LOG(APP_LOG_LEVEL_DEBUG, "Server error received %d", server_error);
-	show_server_error();
+	//show_server_error();
   }  
-  
-  Tuple *lat_tuple = dict_find(iter, BOAT_LAT_KEY);
-  Tuple *lon_tuple = dict_find(iter, BOAT_LON_KEY);
-  Tuple *sog_tuple = dict_find(iter, BOAT_SOG_KEY);
-  Tuple *cog_tuple = dict_find(iter, BOAT_COG_KEY);
-  Tuple *boat_speed_tuple = dict_find(iter, BOAT_BOAT_SPEED_KEY);
-  Tuple *depth_tuple = dict_find(iter, BOAT_DEPTH_KEY);
-  Tuple *wind_speed_tuple = dict_find(iter, BOAT_WIND_SPEED_KEY);
-  Tuple *wind_angle_tuple = dict_find(iter, BOAT_WIND_ANGLE_KEY);
-  Tuple *dtw_tuple = dict_find(iter, BOAT_DTW_KEY);
-  Tuple *btw_tuple = dict_find(iter, BOAT_BTW_KEY);
-  Tuple *xte_tuple = dict_find(iter, BOAT_XTE_KEY);
-  Tuple *waypoint_tuple = dict_find(iter, BOAT_WAYPOINT_KEY);
-  Tuple *wpt_lat_tuple = dict_find(iter, BOAT_WPT_LAT_KEY);
-  Tuple *wpt_lon_tuple = dict_find(iter, BOAT_WPT_LON_KEY);
-  Tuple *temp_tuple = dict_find(iter, BOAT_TEMP_KEY);
-  Tuple *distance_total_tuple = dict_find(iter, BOAT_DISTANCE_TOTAL_KEY);
-  Tuple *distance_reset_tuple = dict_find(iter, BOAT_DISTANCE_RESET_KEY);
-
-  if (current_screen == SCREEN_GPS_KEY){
-	APP_LOG(APP_LOG_LEVEL_DEBUG, "GPS Screen");
-    if (lat_tuple) {
-      set_gps_lat(lat_tuple);
-    }
-	if (lon_tuple) {
-      set_gps_lon(lon_tuple);
-    }
-	if (sog_tuple) {
-      set_gps_sog(sog_tuple);
-    }
-	if (cog_tuple) {
-      set_gps_cog(cog_tuple);
-    }
-  }
-  if (current_screen == SCREEN_SAILING_KEY){
-    if (boat_speed_tuple) {
-      set_sailing_boat_speed(boat_speed_tuple);
-    }
-	if (depth_tuple) {
-      set_sailing_depth(depth_tuple);
-    }
-	if (wind_speed_tuple) {
-      set_sailing_wind_speed(wind_speed_tuple);
-    }
-	if (wind_angle_tuple) {
-      set_sailing_wind_angle(wind_angle_tuple);
-    }
-  }
-  if (current_screen == SCREEN_NAVIGATION_KEY){
-	APP_LOG(APP_LOG_LEVEL_DEBUG, "Navigation Screen");
-    if (dtw_tuple) {
-      set_navigation_dtw(dtw_tuple);
-    }
-	if (btw_tuple) {
-      set_navigation_btw(btw_tuple);
-    }
-	if (sog_tuple) {
-      set_navigation_sog(sog_tuple);
-    }
-	if (cog_tuple) {
-      set_navigation_cog(cog_tuple);
-    }
-  }
-  if (current_screen == SCREEN_MANUAL_KEY){
-	APP_LOG(APP_LOG_LEVEL_DEBUG, "Manual Screen");
-    if (dtw_tuple) {
-      set_manual_dtw(dtw_tuple);
-    }
-	if (btw_tuple) {
-      set_manual_btw(btw_tuple);
-    }
-	if (xte_tuple) {
-      set_manual_xte(xte_tuple);
-    }
-  }
-  if (current_screen == SCREEN_WAYPOINT_KEY){
-	APP_LOG(APP_LOG_LEVEL_DEBUG, "Waypoint Screen");
-    if (dtw_tuple) {
-      set_waypoint_dtw(dtw_tuple);
-    }
-	if (btw_tuple) {
-      set_waypoint_btw(btw_tuple);
-    }
-	if (waypoint_tuple) {
-      set_waypoint_waypoint(waypoint_tuple);
-    }
-	if (wpt_lat_tuple) {
-      set_waypoint_wpt_lat(wpt_lat_tuple);
-    }
-	if (wpt_lon_tuple) {
-      set_waypoint_wpt_lon(wpt_lon_tuple);
-    }
-  }
-  if (current_screen == SCREEN_LOG_KEY){
-	APP_LOG(APP_LOG_LEVEL_DEBUG, "Log Screen");
-    if (temp_tuple) {
-      set_log_temp(temp_tuple);
-    }
-	if (distance_total_tuple) {
-      set_log_distance_total(distance_total_tuple);
-    }
-	if (distance_reset_tuple) {
-      set_log_distance_reset(distance_reset_tuple);
-    }
+  switch(current_screen){
+    case SCREEN_GPS_KEY:
+       update_gps_fields(iter);
+       break;
+	case SCREEN_SAILING_KEY:
+       update_sailing_fields(iter);
+       break;
+	case SCREEN_NAVIGATION_KEY:
+       update_navigation_fields(iter);
+       break;
+	case SCREEN_WAYPOINT_KEY:
+       update_waypoint_fields(iter);
+       break;
+	case SCREEN_LOG_KEY:
+       update_log_fields(iter);
+       break;
+    case SCREEN_ANCHOR_WATCH_KEY:
+       update_anchor_watch_fields(iter);
+       break;
   }
 }
 
@@ -216,6 +104,24 @@ static void toggle_lights(void) {
 	  APP_LOG(APP_LOG_LEVEL_DEBUG, "Toggling lights");
 	  //APP_LOG(APP_LOG_LEVEL_DEBUG, "Sending value %d", current_screen);
       Tuplet value = TupletInteger(TOGGLE_LIGHTS_KEY, 1);
+
+      DictionaryIterator *iter;
+      app_message_outbox_begin(&iter);
+
+      if (iter == NULL) {
+        return;
+      }
+
+      dict_write_tuplet(iter, &value);
+      dict_write_end(iter);
+
+      app_message_outbox_send();
+}
+
+static void set_anchor_watch(void) {
+	  APP_LOG(APP_LOG_LEVEL_DEBUG, "Set anchor watch");
+	  //APP_LOG(APP_LOG_LEVEL_DEBUG, "Sending value %d", current_screen);
+      Tuplet value = TupletInteger(SET_ANCHOR_WATCH_KEY, 1);
 
       DictionaryIterator *iter;
       app_message_outbox_begin(&iter);
@@ -280,6 +186,9 @@ void navigate_down_handler(ClickRecognizerRef recognizer, void *context){
 void select_handler(ClickRecognizerRef recognizer, void *context){
 	if (current_screen == SCREEN_LIGHTS_KEY){
 		toggle_lights();
+	}
+	else if (current_screen == SCREEN_ANCHOR_WATCH_KEY){
+		set_anchor_watch();
 	}
 }
 
@@ -346,16 +255,6 @@ static void init(void) {
       window_set_background_color(w, GColorBlack);
       window_set_fullscreen(w, true);
       window_set_window_handlers(w, (WindowHandlers) {
-        .load = manual_window_load,
-        .unload = manual_window_unload
-      });
-	  window_set_click_config_provider(w, config_provider);
-	  view_windows[SCREEN_MANUAL_KEY] = w;
-	
-	  w = window_create();
-      window_set_background_color(w, GColorBlack);
-      window_set_fullscreen(w, true);
-      window_set_window_handlers(w, (WindowHandlers) {
         .load = waypoint_window_load,
         .unload = waypoint_window_unload
       });
@@ -371,6 +270,16 @@ static void init(void) {
       });
 	  window_set_click_config_provider(w, config_provider);
 	  view_windows[SCREEN_LOG_KEY] = w;
+	
+	  w = window_create();
+      window_set_background_color(w, GColorBlack);
+      window_set_fullscreen(w, true);
+      window_set_window_handlers(w, (WindowHandlers) {
+        .load = anchor_watch_window_load,
+        .unload = anchor_watch_window_unload
+      });
+	  window_set_click_config_provider(w, config_provider);
+	  view_windows[SCREEN_ANCHOR_WATCH_KEY] = w;
 	
 	  w = window_create();
       window_set_background_color(w, GColorBlack);
@@ -401,13 +310,18 @@ static void init(void) {
 	  const bool animated = true;
 	  //APP_LOG(APP_LOG_LEVEL_DEBUG, "Pushing screen %d", current_screen);
       //window_stack_push(view_windows[current_screen], animated);
-	  window_stack_push(menu_window, animated); 
-	  current_screen = SCREEN_MENU_KEY;
-	  last_screen = persist_exists(54321) ? persist_read_int(54321) : SCREEN_GPS_KEY;
-	  current_menu = persist_exists(54322) ? persist_read_int(54322) : MENU_VIEW_KEY;	
+	  
+	  current_menu = persist_exists(54322) ? persist_read_int(54322) : 0;
+	  if (persist_exists(54321)){
+		  current_screen = persist_read_int(54321);
+		  window_stack_push(view_windows[current_screen], animated); 
+	  }
+	  else{
+		  current_screen = SCREEN_MENU_KEY;  
+		  window_stack_push(menu_window, animated); 
+	  }
 	  APP_LOG(APP_LOG_LEVEL_DEBUG, "Persistent Read %d=%d", 54321,
-			  last_screen);
-	  menu_set_selected(last_screen);
+			  current_screen);
 }
 
 static void deinit(void) {
