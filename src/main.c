@@ -21,6 +21,7 @@ int current_screen;
 int last_screen;
 int current_menu;
 int server_error;
+int phone_heartbeat;
 
 //Data Keys are now stored in helpers.c
 
@@ -38,10 +39,10 @@ enum ScreenKey {
 
 int view_windows_enable [VIEW_WINDOW_COUNT] = {1,1,1,1,1,1};
 
-void show_server_error(){
+void show_message(char message[]){
 	window_stack_pop(true);
 	window_stack_push(message_window, true);
-	set_message("no connection to Boat Remote Server");
+	set_message(message);
 	last_screen = current_screen;
 	current_screen = SCREEN_MESSAGE_KEY;
 }
@@ -64,13 +65,14 @@ void change_screen(int nextScreen){
 }
 
 static void in_received_handler(DictionaryIterator *iter, void *context) {
+  phone_heartbeat = 5;
   APP_LOG(APP_LOG_LEVEL_DEBUG, "Received message, current screen: %d", current_screen);
   Tuple *server_error_tuple = dict_find(iter, SERVER_ERROR_KEY); 
   if (server_error_tuple){
 	    if (current_screen != SCREEN_MESSAGE_KEY){
 		server_error = atoi(server_error_tuple->value->cstring);
 		APP_LOG(APP_LOG_LEVEL_DEBUG, "Server error received %d", server_error);
-		show_server_error();
+		show_message("No connection to Boat Remote Server");
 	  } 
 	  return;
   }
@@ -108,6 +110,9 @@ static void in_dropped_handler(AppMessageResult reason, void *context) {
 
 static void out_failed_handler(DictionaryIterator *failed, AppMessageResult reason, void *context) {
   APP_LOG(APP_LOG_LEVEL_DEBUG, "App Message Failed to Send!");
+  phone_heartbeat--;
+  if (phone_heartbeat == 0)
+	  show_message("No connection to Pebble app on phone");
 }
 
 static void send_message(int key, int value) {
@@ -302,6 +307,7 @@ static void init(void) {
 	  }
 	  APP_LOG(APP_LOG_LEVEL_DEBUG, "Persistent Read %d=%d", 54321,
 			  current_screen);
+	  phone_heartbeat = 5;
 }
 
 static void deinit(void) {

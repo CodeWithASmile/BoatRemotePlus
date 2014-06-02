@@ -97,19 +97,15 @@ Pebble.addEventListener("appmessage",
 		//console.log("url = " + url);
 		req.open('GET', url, true);
 		req.onreadystatechange = function(){
-			console.log("Status of request is " + req.readyState);
-			console.log("Status of response is " + req.status);
+			//console.log("Status of request is " + req.readyState);
+			//console.log("Status of response is " + req.status);
 		};
 		req.onload = function(recData) {
 			console.log("received data");
 			if (req.readyState == 4 && req.status == 200) {
-				if(req.status == 200) {
-					var result = JSON.parse(req.responseText);
-					parseResults(current_screen, result); 
-				}
-				else { 
-					console.log("Error in response from server"); 
-				}
+				clearTimeout(myTimeout);
+				var result = JSON.parse(req.responseText);
+				parseResults(current_screen, result); 
 			}
 			else { 
 				console.log("Error in response from server"); 
@@ -121,5 +117,10 @@ Pebble.addEventListener("appmessage",
 			Pebble.sendAppMessage({"server_error": "1"});
 		};
 		req.send(null);
-	}
+		var myTimeout = setTimeout(function(){
+			req.abort();
+			console.error("The request for " + url + " timed out - own timeout.");
+			Pebble.sendAppMessage({"server_error": "1"});
+		}, 5000); 
+									}
 );
