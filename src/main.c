@@ -7,11 +7,10 @@
 #include "waypoint.h"
 #include "log.h"
 #include "anchor_watch.h"
-#include "lights.h"
 #include "menu.h"
 #include "keys.h"
 	
-#define VIEW_WINDOW_COUNT 7
+#define VIEW_WINDOW_COUNT 6
 
 Window* message_window;
 Window* menu_window;
@@ -33,11 +32,10 @@ enum ScreenKey {
   SCREEN_NAVIGATION_KEY = 2,
   SCREEN_WAYPOINT_KEY = 3,
   SCREEN_LOG_KEY = 4,
-  SCREEN_ANCHOR_WATCH_KEY = 5,
-  SCREEN_LIGHTS_KEY = 6
+  SCREEN_ANCHOR_WATCH_KEY = 5
 };
 
-int view_windows_enable [VIEW_WINDOW_COUNT] = {1,1,1,1,1,1};
+int view_windows_enable [VIEW_WINDOW_COUNT] = {1,1,1,1,1};
 
 void show_message(char message[]){
 	window_stack_pop(true);
@@ -129,7 +127,7 @@ static void send_message(int key, int value) {
 
 static void handle_tick(struct tm *tick_time, TimeUnits units_changed) {
 	//APP_LOG(APP_LOG_LEVEL_DEBUG, "Tick");
-	if (current_screen != SCREEN_LIGHTS_KEY && current_screen != SCREEN_MENU_KEY){
+	if (current_screen != SCREEN_MENU_KEY){
     		send_message(CURRENT_SCREEN_KEY, current_screen);
 		}
 	//APP_LOG(APP_LOG_LEVEL_DEBUG, "Tock");
@@ -156,10 +154,7 @@ void navigate_down_handler(ClickRecognizerRef recognizer, void *context){
 }
 
 void select_handler(ClickRecognizerRef recognizer, void *context){
-	if (current_screen == SCREEN_LIGHTS_KEY){
-		send_message(TOGGLE_LIGHTS_KEY,1);
-	}
-	else if (current_screen == SCREEN_ANCHOR_WATCH_KEY){
+	if (current_screen == SCREEN_ANCHOR_WATCH_KEY){
 		send_message(SET_ANCHOR_WATCH_KEY,1);
 	}
 }
@@ -256,16 +251,6 @@ static void init(void) {
       });
 	  window_set_click_config_provider(w, config_provider);
 	  view_windows[SCREEN_ANCHOR_WATCH_KEY] = w;
-	
-	  w = window_create();
-      window_set_background_color(w, GColorBlack);
-      window_set_fullscreen(w, true);
-      window_set_window_handlers(w, (WindowHandlers) {
-        .load = lights_window_load,
-        .unload = lights_window_unload
-      });
-	  window_set_click_config_provider(w, config_provider);
-	  view_windows[SCREEN_LIGHTS_KEY] = w;
 	
 	  message_window = window_create();
       window_set_background_color(message_window, GColorBlack);
