@@ -3,7 +3,7 @@
 
 #define NUM_MENU_SECTIONS 1
 #define NUM_MENU_ICONS 0
-#define NUM_FIRST_MENU_ITEMS 5
+#define NUM_FIRST_MENU_ITEMS 6
 #define NUM_SECOND_MENU_ITEMS 0
 	
 MenuLayer *menu_layer;
@@ -66,6 +66,9 @@ void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuIndex *c
           break;
 		case 4:
           menu_cell_title_draw(ctx, cell_layer, "Log");
+          break;
+		case 5:
+          menu_cell_title_draw(ctx, cell_layer, "Anchor Watch");
           break;
 	  }
   }

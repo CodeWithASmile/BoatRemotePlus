@@ -21,9 +21,12 @@
 	  int i;
 	  Tuple *tuple;
 	  for(i = 0; i < numFields; i++){
+		//APP_LOG(APP_LOG_LEVEL_DEBUG, "i=%d field=%d", i, fields[i]);
   		tuple = dict_find(iter, fields[i]);
+		//APP_LOG(APP_LOG_LEVEL_DEBUG, "Tried to get tuple");
 		if (tuple){
 			text_layer_set_text(fieldLayers[i], tuple->value->cstring);
+			//APP_LOG(APP_LOG_LEVEL_DEBUG, "value=%s", i, fields[i]);
 		}
 	  }
     }

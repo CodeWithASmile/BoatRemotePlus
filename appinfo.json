@@ -1,48 +1,48 @@
 {
+    "versionCode": 1,
+    "versionLabel": "0.1.0",
+    "shortName": "Boat Remote",
+    "resources": {
+        "media": [
+            {
+                "menuIcon": true,
+                "type": "png",
+                "file": "images/icon 24x28.png",
+                "name": "icon_small"
+            }
+        ]
+    },
+    "appKeys": {
+        "wpt_lat": 112,
+        "btw": 110,
+        "drift": 117,
+        "screen": 0,
+        "wpt_lon": 113,
+        "waypoint": 111,
+        "temp": 114,
+        "toggle_lights": 201,
+        "lon": 102,
+        "cog": 104,
+        "lat": 101,
+        "anchor_watch": 202,
+        "wind_speed": 107,
+        "menu": 1,
+        "distance_reset": 116,
+        "dtw": 109,
+        "distance_total": 115,
+        "wind_angle": 108,
+        "depth": 106,
+        "sog": 103,
+        "boat_speed": 105,
+        "server_error": 2
+    },
     "longName": "Boat Remote",
-    "companyName": "Code With a Smile",
     "uuid": "57d2c4e1-5799-4d2d-8ae1-b22822da119b",
     "capabilities": [
         "configurable"
     ],
-    "versionLabel": "0.1.0",
-    "appKeys": {
-        "server_error": 2,
-        "drift": 117,
-        "distance_reset": 116,
-        "screen": 0,
-        "menu": 1,
-        "anchor_watch": 202,
-        "temp": 114,
-        "distance_total": 115,
-        "btw": 110,
-        "wind_speed": 107,
-        "wind_angle": 108,
-        "cog": 104,
-        "depth": 106,
-        "dtw": 109,
-        "wpt_lat": 112,
-        "lat": 101,
-        "sog": 103,
-        "boat_speed": 105,
-        "wpt_lon": 113,
-        "toggle_lights": 201,
-        "lon": 102,
-        "waypoint": 111
-    },
-    "resources": {
-        "media": [
-            {
-                "file": "images/icon 24x28.png",
-                "name": "icon_small",
-                "type": "png",
-                "menuIcon": true
-            }
-        ]
-    },
     "watchapp": {
         "watchface": false
     },
-    "shortName": "Boat Remote",
-    "versionCode": 1
+    "companyName": "Code With a Smile"
 }

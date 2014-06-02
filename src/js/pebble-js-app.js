@@ -1,124 +1,125 @@
 Pebble.addEventListener("ready",
-  function(e) {
-    console.log("JavaScript app ready and running!");
-  }
+	function(e) {
+		console.log("JavaScript app ready and running!");
+	}
 );
 
 Pebble.addEventListener("showConfiguration", function() {
-  console.log("showing configuration");
-  var config_url = "http://www.codewithasmile.co.uk/pebble/configuration.html";
-  var server = localStorage.getItem("server");
-  var port = localStorage.getItem("port");
-  config_url = config_url + "?server=" + (server || "") + "&port=" + (port  || "");
-  Pebble.openURL(config_url);
+	console.log("showing configuration");
+	var config_url = "http://www.codewithasmile.co.uk/pebble/configuration.html";
+	var server = localStorage.getItem("server");
+	var port = localStorage.getItem("port");
+	config_url = config_url + "?server=" + (server || "") + "&port=" + (port  || "");
+	Pebble.openURL(config_url);
 });
 
 Pebble.addEventListener("webviewclosed", function(e) {
-  console.log("configuration closed");
-  // webview closed
-  var options = JSON.parse(decodeURIComponent(e.response));
-  localStorage.clear();
-  localStorage.setItem("server", options.server);
-  localStorage.setItem("port", options.port);	
-  console.log("Options = " + JSON.stringify(options));
+	console.log("configuration closed");
+	// webview closed
+	var options = JSON.parse(decodeURIComponent(e.response));
+	localStorage.clear();
+	localStorage.setItem("server", options.server);
+	localStorage.setItem("port", options.port);	
+	console.log("Options = " + JSON.stringify(options));
 });
 
-function toggleLights(){
-	console.log("Toggling lights FROM JS!"); 
-	var req = new XMLHttpRequest();
+function getURL(){
 	var server = localStorage.getItem("server");
     var port = localStorage.getItem("port");
-	var url = server + ':'+ port +'/toggle_lights';
+	var url = server + ':'+ port;
     if (server.substr(0,7)  != 'http://'){
         url = 'http://' + url;
-    }	
+    }
+	return url;
+}
+
+function sendPOST(command){
+	var req = new XMLHttpRequest();
+	var url = getURL();
+	url = url + '/' + command;
 	//console.log("url = " + url);
     req.open('POST', url, true);
 	req.send(null);
 }
 
-function setAnchorWatch(){
-	console.log("Setting Anchor Watch FROM JS!"); 
-	var req = new XMLHttpRequest();
-	var server = localStorage.getItem("server");
-    var port = localStorage.getItem("port");
-	var url = server + ':'+ port +'/set_anchor_watch';
-    if (server.substr(0,7)  != 'http://'){
-        url = 'http://' + url;
-    }	
-	//console.log("url = " + url);
-    req.open('POST', url, true);
-	req.send(null);
+function parseResults(current_screen, result){
+	switch(current_screen) {
+		case -2:
+			Pebble.sendAppMessage({ "test":"test"});
+			break;
+		case 0:
+			Pebble.sendAppMessage({ "lat":result.lat, "lon":result.lon, 
+									"sog":result.sog, "cog":result.cog});
+			break;
+		case 1:
+			Pebble.sendAppMessage({ "boat_speed":result.boat_speed, "depth":result.depth, 
+									"wind_speed":result.wind_speed, "wind_angle":result.wind_angle});
+			break;
+		case 2:
+			Pebble.sendAppMessage({ "dtw":result.dtw, "btw":result.btw,
+									"sog":result.sog, "cog":result.cog});
+			break;
+		case 3:
+			Pebble.sendAppMessage({ "dtw":result.dtw, "btw":result.btw, 
+									"waypoint":result.waypoint, 
+									"wpt_lat":result.wpt_lat,
+									"wpt_lon":result.wpt_lon});
+			break;
+		case 4:
+			Pebble.sendAppMessage({ "temp":result.temp, 
+									"distance_total":result.distance_total, 
+									"distance_reset":result.distance_reset});
+			break;
+		case 5:
+			Pebble.sendAppMessage({ "drift":result.drift});
+	}
+	
 }
+
 
 Pebble.addEventListener("appmessage",
-  function(recMessage) {
-	console.log("received message: " + JSON.stringify(recMessage.payload, null, 2));
-	if (recMessage.payload.toggle_lights){
-      toggleLights();
-	}
-	else if (recMessage.payload.anchor_watch){
-      set_anchor_watch();
-	}
-	else
-	{
-	var currentScreen = recMessage.payload.screen;
-	//console.log("received message: screen: " + recMessage.payload.screen);
-	var req = new XMLHttpRequest();
-	var server = localStorage.getItem("server");
-    var port = localStorage.getItem("port");
-	var url = server + ':'+ port +'/watch';
-    if (server.substr(0,7)  != 'http://'){
-        url = 'http://' + url;
-    }	
-	//console.log("url = " + url);
-    req.open('GET', url, true);
-    req.onload = function(recData) {
-      if (req.readyState == 4 && req.status == 200) {
-        if(req.status == 200) {
-          var result = JSON.parse(req.responseText);
-			 
-          switch(currentScreen) {
-			case 0:
-              Pebble.sendAppMessage({ "lat":result.lat, "lon":result.lon, 
-                                      "sog":result.sog, "cog":result.cog});
-              break;
-			case 1:
-              Pebble.sendAppMessage({ "boat_speed":result.boat_speed, "depth":result.depth, 
-                                      "wind_speed":result.wind_speed, "wind_angle":result.wind_angle});
-              break;
-            case 2:
-              Pebble.sendAppMessage({ "dtw":result.dtw, "btw":result.btw,
-									  "sog":result.sog, "cog":result.cog});
-              break;
-			case 3:
-              Pebble.sendAppMessage({ "dtw":result.dtw, "btw":result.btw, 
-                                      "waypoint":result.waypoint, 
-                                      "wpt_lat":result.wpt_lat,
-                                      "wpt_lon":result.wpt_lon});
-              break;
-			case 4:
-              Pebble.sendAppMessage({ "temp":result.temp, 
-                                      "distance_total":result.distance_total, 
-                                      "distance_reset":result.distance_reset});
-			case 5:
-              Pebble.sendAppMessage({ "drift":result.drift});
-          }
+	function(recMessage) {
+		console.log("received message: " + JSON.stringify(recMessage.payload, null, 2));
+		if (recMessage.payload.toggle_lights){
+			sendPOST("toggle_lights");
 		}
-        else { 
-          console.log("Error in response from server"); 
-        }
-      }
-      else { 
-          console.log("Error in response from server"); 
-      }
-  };
-  req.timeout = 5000;
-  req.ontimeout = function () {
-    console.error("The request for " + url + " timed out.");
-	Pebble.sendAppMessage({"server_error": "1"});
-  };
-  req.send(null);
-  }
-  }
+		else if (recMessage.payload.anchor_watch){
+			if (recMessage.payload.anchor_watch == 1){
+				sendPOST("set_anchor_watch");
+			}
+			else{
+				sendPOST("reset_anchor_watch");
+			}
+		}
+		var current_screen = recMessage.payload.screen;
+		var req = new XMLHttpRequest();
+		var url = getURL() +'/watch';
+		//console.log("url = " + url);
+		req.open('GET', url, true);
+		req.onreadystatechange = function(){
+			console.log("Status of request is " + req.readyState);
+			console.log("Status of response is " + req.status);
+		};
+		req.onload = function(recData) {
+			console.log("received data");
+			if (req.readyState == 4 && req.status == 200) {
+				if(req.status == 200) {
+					var result = JSON.parse(req.responseText);
+					parseResults(current_screen, result); 
+				}
+				else { 
+					console.log("Error in response from server"); 
+				}
+			}
+			else { 
+				console.log("Error in response from server"); 
+			}
+		};
+		req.timeout = 5000;
+		req.ontimeout = function () {
+			console.error("The request for " + url + " timed out.");
+			Pebble.sendAppMessage({"server_error": "1"});
+		};
+		req.send(null);
+	}
 );

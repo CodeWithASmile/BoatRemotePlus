@@ -52,7 +52,7 @@ void waypoint_window_load(Window *window) {
 	  t = create_field_layer(135);
       text_layer_set_font(t, fonts_get_system_font(FONT_KEY_BITHAM_30_BLACK));
       layer_add_child(window_layer, text_layer_get_layer(t));
-	  waypointFieldLayers[0] = t;
+	  waypointFieldLayers[4] = t;
 	
 }
 

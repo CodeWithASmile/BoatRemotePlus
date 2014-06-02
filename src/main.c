@@ -39,38 +39,66 @@ enum ScreenKey {
 int view_windows_enable [VIEW_WINDOW_COUNT] = {1,1,1,1,1,1};
 
 void show_server_error(){
-	set_message("Server Error");
-	window_stack_push(message_window, true);	
+	window_stack_pop(true);
+	window_stack_push(message_window, true);
+	set_message("no connection to Boat Remote Server");
+	last_screen = current_screen;
+	current_screen = SCREEN_MESSAGE_KEY;
+}
+
+void load_menu(){
+	window_stack_pop(true);
+	window_stack_push(menu_window, true);
+	current_screen=SCREEN_MENU_KEY;
+	menu_set_selected(last_screen);
+}
+
+void change_screen(int nextScreen){
+	APP_LOG(APP_LOG_LEVEL_DEBUG, "Current_screen %d", current_screen);
+	APP_LOG(APP_LOG_LEVEL_DEBUG, "Next_screen %d", nextScreen);
+	window_stack_pop(true);
+	//APP_LOG(APP_LOG_LEVEL_DEBUG, "Pushing screen %d", nextScreen);
+	window_stack_push(view_windows[nextScreen], true);
+	current_screen = nextScreen;
+	last_screen = current_screen;
 }
 
 static void in_received_handler(DictionaryIterator *iter, void *context) {
   APP_LOG(APP_LOG_LEVEL_DEBUG, "Received message, current screen: %d", current_screen);
   Tuple *server_error_tuple = dict_find(iter, SERVER_ERROR_KEY); 
-  //APP_LOG(APP_LOG_LEVEL_DEBUG, "Server error received %s", server_error_tuple->value->cstring);
   if (server_error_tuple){
-	server_error = atoi(server_error_tuple->value->cstring);
-	APP_LOG(APP_LOG_LEVEL_DEBUG, "Server error received %d", server_error);
-	//show_server_error();
-  }  
-  switch(current_screen){
-    case SCREEN_GPS_KEY:
-       update_gps_fields(iter);
-       break;
-	case SCREEN_SAILING_KEY:
-       update_sailing_fields(iter);
-       break;
-	case SCREEN_NAVIGATION_KEY:
-       update_navigation_fields(iter);
-       break;
-	case SCREEN_WAYPOINT_KEY:
-       update_waypoint_fields(iter);
-       break;
-	case SCREEN_LOG_KEY:
-       update_log_fields(iter);
-       break;
-    case SCREEN_ANCHOR_WATCH_KEY:
-       update_anchor_watch_fields(iter);
-       break;
+	    if (current_screen != SCREEN_MESSAGE_KEY){
+		server_error = atoi(server_error_tuple->value->cstring);
+		APP_LOG(APP_LOG_LEVEL_DEBUG, "Server error received %d", server_error);
+		show_server_error();
+	  } 
+	  return;
+  }
+	
+  else{
+	  switch(current_screen){
+		case SCREEN_MESSAGE_KEY:
+		   window_stack_pop(true);
+		   change_screen(last_screen);
+		case SCREEN_GPS_KEY:
+		   update_gps_fields(iter);
+		   break;
+		case SCREEN_SAILING_KEY:
+		   update_sailing_fields(iter);
+		   break;
+		case SCREEN_NAVIGATION_KEY:
+		   update_navigation_fields(iter);
+		   break;
+		case SCREEN_WAYPOINT_KEY:
+		   update_waypoint_fields(iter);
+		   break;
+		case SCREEN_LOG_KEY:
+		   update_log_fields(iter);
+		   break;
+		case SCREEN_ANCHOR_WATCH_KEY:
+		   update_anchor_watch_fields(iter);
+		   break;
+	  }
   }
 }
 
@@ -82,67 +110,23 @@ static void out_failed_handler(DictionaryIterator *failed, AppMessageResult reas
   APP_LOG(APP_LOG_LEVEL_DEBUG, "App Message Failed to Send!");
 }
 
-static void send_current_screen(void) {
-	  //APP_LOG(APP_LOG_LEVEL_DEBUG, "Sending key %d", CURRENT_SCREEN_KEY);
-	  //APP_LOG(APP_LOG_LEVEL_DEBUG, "Sending value %d", current_screen);
-      Tuplet value = TupletInteger(CURRENT_SCREEN_KEY, current_screen);
-
+static void send_message(int key, int value) {
+      Tuplet tuplet = TupletInteger(key, value);
       DictionaryIterator *iter;
       app_message_outbox_begin(&iter);
-
       if (iter == NULL) {
         return;
       }
-
-      dict_write_tuplet(iter, &value);
+      dict_write_tuplet(iter, &tuplet);
       dict_write_end(iter);
-
-      app_message_outbox_send();
-}
-
-static void toggle_lights(void) {
-	  APP_LOG(APP_LOG_LEVEL_DEBUG, "Toggling lights");
-	  //APP_LOG(APP_LOG_LEVEL_DEBUG, "Sending value %d", current_screen);
-      Tuplet value = TupletInteger(TOGGLE_LIGHTS_KEY, 1);
-
-      DictionaryIterator *iter;
-      app_message_outbox_begin(&iter);
-
-      if (iter == NULL) {
-        return;
-      }
-
-      dict_write_tuplet(iter, &value);
-      dict_write_end(iter);
-
-      app_message_outbox_send();
-}
-
-static void set_anchor_watch(void) {
-	  APP_LOG(APP_LOG_LEVEL_DEBUG, "Set anchor watch");
-	  //APP_LOG(APP_LOG_LEVEL_DEBUG, "Sending value %d", current_screen);
-      Tuplet value = TupletInteger(SET_ANCHOR_WATCH_KEY, 1);
-
-      DictionaryIterator *iter;
-      app_message_outbox_begin(&iter);
-
-      if (iter == NULL) {
-        return;
-      }
-
-      dict_write_tuplet(iter, &value);
-      dict_write_end(iter);
-
       app_message_outbox_send();
 }
 
 static void handle_tick(struct tm *tick_time, TimeUnits units_changed) {
 	//APP_LOG(APP_LOG_LEVEL_DEBUG, "Tick");
-	if (current_screen != SCREEN_LIGHTS_KEY) {
-		if (current_screen != SCREEN_MENU_KEY){
-    		send_current_screen();
+	if (current_screen != SCREEN_LIGHTS_KEY && current_screen != SCREEN_MENU_KEY){
+    		send_message(CURRENT_SCREEN_KEY, current_screen);
 		}
-	}
 	//APP_LOG(APP_LOG_LEVEL_DEBUG, "Tock");
 }
 
@@ -154,23 +138,6 @@ int get_next_screen(int currentScreen) {
 int get_previous_screen(int currentScreen) {
 	APP_LOG(APP_LOG_LEVEL_DEBUG, "Leaving %d", currentScreen);
 	return (currentScreen - 1 + VIEW_WINDOW_COUNT) % VIEW_WINDOW_COUNT;
-}
-
-void change_screen(int nextScreen){
-	APP_LOG(APP_LOG_LEVEL_DEBUG, "Current_screen %d", current_screen);
-	APP_LOG(APP_LOG_LEVEL_DEBUG, "Next_screen %d", nextScreen);
-	if(current_screen == SCREEN_MENU_KEY){
-		//APP_LOG(APP_LOG_LEVEL_DEBUG, "Popping menu_window");
-		window_stack_pop(menu_window);
-	}
-	else{
-		//APP_LOG(APP_LOG_LEVEL_DEBUG, "Popping screen %d", current_screen);
-		window_stack_pop(view_windows[current_screen]);
-	}
-	//APP_LOG(APP_LOG_LEVEL_DEBUG, "Pushing screen %d", nextScreen);
-	window_stack_push(view_windows[nextScreen], true);
-	current_screen = nextScreen;
-	last_screen = current_screen;
 }
 
 void navigate_up_handler(ClickRecognizerRef recognizer, void *context){
@@ -185,39 +152,43 @@ void navigate_down_handler(ClickRecognizerRef recognizer, void *context){
 
 void select_handler(ClickRecognizerRef recognizer, void *context){
 	if (current_screen == SCREEN_LIGHTS_KEY){
-		toggle_lights();
+		send_message(TOGGLE_LIGHTS_KEY,1);
 	}
 	else if (current_screen == SCREEN_ANCHOR_WATCH_KEY){
-		set_anchor_watch();
+		send_message(SET_ANCHOR_WATCH_KEY,1);
 	}
 }
 
-void load_menu(){
-	window_stack_pop(view_windows[current_screen]);
-	window_stack_push(menu_window, true);
-	current_screen=SCREEN_MENU_KEY;
-	menu_set_selected(last_screen);
+void long_select_handler(ClickRecognizerRef recognizer, void *context){
+	if (current_screen == SCREEN_ANCHOR_WATCH_KEY){
+		send_message(SET_ANCHOR_WATCH_KEY,0);
+	}
 }
 
+void long_select_handler_release(ClickRecognizerRef recognizer, void *context){
+}
 
 void config_provider(void *context) {
    window_single_click_subscribe(BUTTON_ID_DOWN, navigate_down_handler);
    window_single_click_subscribe(BUTTON_ID_UP, navigate_up_handler);
    window_single_click_subscribe(BUTTON_ID_SELECT, select_handler);
    window_single_click_subscribe(BUTTON_ID_BACK, load_menu);
+   window_long_click_subscribe(BUTTON_ID_SELECT, 1000, long_select_handler, 
+							   long_select_handler_release);
+ }
+
+void message_back_handler(ClickRecognizerRef recognizer, void *context){
+	window_stack_pop(true);
+	window_stack_pop(true);
+}
+
+void message_config_provider(void *context) {
+   window_single_click_subscribe(BUTTON_ID_BACK, message_back_handler);
  }
 
 static void init(void) {
 	  Window* w;
 	  tick_timer_service_subscribe(SECOND_UNIT, handle_tick);
-	
-	  message_window = window_create();
-      window_set_background_color(message_window, GColorBlack);
-      window_set_fullscreen(message_window, true);
-      window_set_window_handlers(message_window, (WindowHandlers) {
-        .load = message_window_load,
-        .unload = message_window_unload
-      });
 	
       //APP_LOG(APP_LOG_LEVEL_DEBUG, "Creating GPS window");
 	  w = window_create();
@@ -291,6 +262,15 @@ static void init(void) {
 	  window_set_click_config_provider(w, config_provider);
 	  view_windows[SCREEN_LIGHTS_KEY] = w;
 	
+	  message_window = window_create();
+      window_set_background_color(message_window, GColorBlack);
+      window_set_fullscreen(message_window, true);
+      window_set_window_handlers(message_window, (WindowHandlers) {
+        .load = message_window_load,
+        .unload = message_window_unload
+      });
+	  window_set_click_config_provider(message_window, message_config_provider);
+	  	
 	  menu_window = window_create();
       // Setup the window handlers
 	  window_set_window_handlers(menu_window, (WindowHandlers){
