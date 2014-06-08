@@ -23,8 +23,6 @@ enum Keys
   BOAT_DISTANCE_RESET_KEY = 116,
   BOAT_DRIFT_KEY = 117,
 	  
-  TOGGLE_LIGHTS_KEY = 202,
-  SET_ANCHOR_WATCH_KEY = 202
+  SET_ANCHOR_WATCH_KEY = 202,
 };
-
-//extern enum Keys keys;
+extern enum Keys keys;
