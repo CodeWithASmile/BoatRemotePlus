@@ -7,7 +7,10 @@
 	
 MenuLayer *control_menu_layer;
 
+ClickConfigProvider control_previous_ccp;
+
 void (*control_menu_change_screen)(int nextScreen); 
+void (*control_menu_back_button_handler)(); 
 
 uint16_t control_menu_get_num_sections_callback(MenuLayer *me, void *data) {
   return NUM_CONTROL_MENU_SECTIONS;
@@ -26,7 +29,7 @@ int16_t control_menu_get_header_height_callback(MenuLayer *me, uint16_t section_
 void control_menu_draw_header_callback(GContext* ctx, const Layer *cell_layer, uint16_t section_index, void *data) {
   //APP_LOG(APP_LOG_LEVEL_DEBUG, "Draw Header");
   // Determine which section we're working with
-  menu_cell_basic_header_draw(ctx, cell_layer, "View");
+  menu_cell_basic_header_draw(ctx, cell_layer, "Control");
 }
 
 // This is the menu item draw callback where you specify what each item should look like
@@ -49,6 +52,12 @@ void control_menu_set_selected(int currentScreen){
 	menu_layer_set_selected_index(control_menu_layer, last_selected, MenuRowAlignCenter, false);
 }
 
+void control_menu_set_back_button_function(void (*function))
+{
+	APP_LOG(APP_LOG_LEVEL_DEBUG, "Setting back_button_callback fucntion");
+	control_menu_back_button_handler = function;	
+}
+
 void control_menu_set_change_screen_function(void (*function)(int nextScreen))
 {
 	APP_LOG(APP_LOG_LEVEL_DEBUG, "Setting change_screen fucntion");
@@ -59,6 +68,21 @@ void control_menu_select_callback(MenuLayer *me, MenuIndex *cell_index, void *da
 	int nextScreen = cell_index->row;
 	//APP_LOG(APP_LOG_LEVEL_DEBUG, "menu select callback %d", nextScreen);
 	(*control_menu_change_screen)(nextScreen);
+}
+
+// This is the new ClickConfigProvider we will set, it just calls the old one and then subscribe
+// for back button events.
+void control_new_ccp(void *context) {
+APP_LOG(APP_LOG_LEVEL_DEBUG, "calling the new control ccp");
+control_previous_ccp(context);
+window_single_click_subscribe(BUTTON_ID_BACK, control_menu_back_button_handler);
+APP_LOG(APP_LOG_LEVEL_DEBUG, "done in the new ccp");
+}
+ 
+// Call this from your init function to do the hack
+void control_force_back_button(Window *window, MenuLayer *menu_layer) {
+control_previous_ccp = window_get_click_config_provider(window);
+window_set_click_config_provider_with_context(window, control_new_ccp, menu_layer);
 }
 
 // This initializes the menu upon window load
@@ -89,6 +113,7 @@ void control_menu_window_load(Window *me) {
 
   // Add it to the window for display
   layer_add_child(window_layer, menu_layer_get_layer(control_menu_layer));
+  control_force_back_button(me, control_menu_layer);
 }
 
 void control_menu_window_unload(Window *me) {

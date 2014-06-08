@@ -12,15 +12,15 @@ void view_menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuInd
 
 void view_menu_set_change_screen_function(void (*function)(int nextScreen));
 
-void view_menu_set_back_button_function(void (*function);
+void view_menu_set_back_button_function(void (*function));
 
 void view_menu_set_selected(int currentScreen);
 
 void view_menu_select_callback(MenuLayer *me, MenuIndex *cell_index, void *data);
 										
-void new_ccp(void *context);
+void view_new_ccp(void *context);
 										
-void force_back_button(Window *window, MenuLayer *menu_layer);
+void view_force_back_button(Window *window, MenuLayer *menu_layer);
 
 void view_menu_window_load(Window *me);
 

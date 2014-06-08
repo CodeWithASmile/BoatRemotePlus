@@ -7,10 +7,10 @@
 	
 MenuLayer *view_menu_layer;
 
-//ClickConfigProvider view_previous_ccp;
+ClickConfigProvider view_previous_ccp;
 
 void (*view_menu_change_screen)(int nextScreen); 
-//void (*view_menu_back_button_handler)(); 
+void (*view_menu_back_button_handler)(); 
 
 uint16_t view_menu_get_num_sections_callback(MenuLayer *me, void *data) {
   return NUM_VIEW_MENU_SECTIONS;
@@ -73,11 +73,11 @@ void view_menu_set_change_screen_function(void (*function)(int nextScreen))
 	view_menu_change_screen = function;	
 }
 
-/*void view_menu_set_back_button_function(void (*function)
+void view_menu_set_back_button_function(void (*function))
 {
 	APP_LOG(APP_LOG_LEVEL_DEBUG, "Setting back_button_callback fucntion");
 	view_menu_back_button_handler = function;	
-}*/
+}
 
 void view_menu_select_callback(MenuLayer *me, MenuIndex *cell_index, void *data) {
 	int nextScreen = cell_index->row;
@@ -87,7 +87,7 @@ void view_menu_select_callback(MenuLayer *me, MenuIndex *cell_index, void *data)
  
 // This is the new ClickConfigProvider we will set, it just calls the old one and then subscribe
 // for back button events.
-/*void new_ccp(void *context) {
+void view_new_ccp(void *context) {
 APP_LOG(APP_LOG_LEVEL_DEBUG, "calling the new ccp");
 view_previous_ccp(context);
 window_single_click_subscribe(BUTTON_ID_BACK, view_menu_back_button_handler);
@@ -95,10 +95,10 @@ APP_LOG(APP_LOG_LEVEL_DEBUG, "done in the new ccp");
 }
  
 // Call this from your init function to do the hack
-void force_back_button(Window *window, MenuLayer *menu_layer) {
-previous_ccp = window_get_click_config_provider(window);
-window_set_click_config_provider_with_context(window, new_ccp, menu_layer);
-}*/
+void view_force_back_button(Window *window, MenuLayer *menu_layer) {
+view_previous_ccp = window_get_click_config_provider(window);
+window_set_click_config_provider_with_context(window, view_new_ccp, menu_layer);
+}
  
 
 // This initializes the menu upon window load
@@ -129,7 +129,7 @@ void view_menu_window_load(Window *me) {
 
   // Add it to the window for display
   layer_add_child(window_layer, menu_layer_get_layer(view_menu_layer));
-  //force_back_button(me, view_menu_layer);
+  view_force_back_button(me, view_menu_layer);
 }
 
 void view_menu_window_unload(Window *me) {

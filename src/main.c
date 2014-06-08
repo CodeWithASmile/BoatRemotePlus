@@ -351,7 +351,7 @@ static void init(void) {
 		.unload = view_menu_window_unload
       });
 	  view_menu_set_change_screen_function(change_screen);
-	  //view_menu_set_back_button_function(load_main_menu);
+	  view_menu_set_back_button_function(load_main_menu);
 	  menu_windows[VIEW_MENU] = w;
 	 
 	  w = window_create();
@@ -361,6 +361,7 @@ static void init(void) {
 		.unload = control_menu_window_unload
       });
 	  control_menu_set_change_screen_function(change_screen);
+	  control_menu_set_back_button_function(load_main_menu);
 	  menu_windows[CONTROL_MENU] = w;
 	  
 	  w = window_create();
