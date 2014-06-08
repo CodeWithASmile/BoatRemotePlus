@@ -80,7 +80,10 @@ function parseResults(current_screen, result){
 Pebble.addEventListener("appmessage",
 	function(recMessage) {
 		console.log("received message: " + JSON.stringify(recMessage.payload, null, 2));
-		if (recMessage.payload.anchor_watch){
+		if (recMessage.payload.toggle_lights){
+			sendPOST("toggle_lights");
+		}
+		else if (recMessage.payload.anchor_watch){
 			if (recMessage.payload.anchor_watch == 1){
 				sendPOST("set_anchor_watch");
 			}
