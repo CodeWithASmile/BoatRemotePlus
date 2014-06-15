@@ -28,6 +28,7 @@ Window* menu_windows[MAX_WINDOW_COUNT];
 int current_screen;
 int last_screen;
 int current_menu;
+int last_menu;
 int server_error;
 int phone_heartbeat;
 
@@ -227,6 +228,7 @@ void long_select_handler(ClickRecognizerRef recognizer, void *context){
 }
 
 void load_main_menu(ClickRecognizerRef recognizer, void *context){
+	last_menu = current_menu;
 	load_menu(MAIN_MENU);
 }
 
@@ -386,17 +388,21 @@ static void init(void) {
       //window_stack_push(view_windows[current_screen], animated);
 	  phone_heartbeat = 5;
 	  if (persist_exists(54322)){
-		  current_menu = persist_read_int(54322);  
+		  current_menu = persist_read_int(54322); 
+		  APP_LOG(APP_LOG_LEVEL_DEBUG, "Reading menu %d", current_menu);
 		  if (persist_exists(54321)){ 
+			  APP_LOG(APP_LOG_LEVEL_DEBUG, "Reading screen %d", current_screen);
 			  current_screen = persist_read_int(54321);
 			  window_stack_push(data_windows[current_menu][current_screen], animated);
 		  }
 		  else{
+			  APP_LOG(APP_LOG_LEVEL_DEBUG, "Default screen");
 			  current_screen = SCREEN_MENU_KEY;
 		      window_stack_push(menu_windows[current_menu], animated); 
 		  }
 	  }
 	  else{
+		  APP_LOG(APP_LOG_LEVEL_DEBUG, "Default menu and screen");
 		  current_menu = MAIN_MENU;
 		  current_screen = SCREEN_MENU_KEY;
 		  window_stack_push(menu_windows[current_menu], animated);
@@ -417,9 +423,9 @@ static void deinit(void) {
 	  check = persist_write_int(54321, last_screen);
 	  APP_LOG(APP_LOG_LEVEL_DEBUG, "Persisting %d=%d, status %d", 54321,
 			  last_screen, check);
-      check = persist_write_int(54322, current_menu);
+      check = persist_write_int(54322, last_menu);
 	  APP_LOG(APP_LOG_LEVEL_DEBUG, "Persisting %d=%d, status %d", 54322,
-	  		  current_menu, check);
+	  		  last_menu, check);
 }
 
 int main(void) {

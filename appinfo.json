@@ -1,48 +1,48 @@
 {
-    "versionLabel": "0.1.0",
-    "watchapp": {
-        "watchface": false
-    },
-    "capabilities": [
-        "configurable"
-    ],
-    "appKeys": {
-        "wpt_lat": 112,
-        "lat": 101,
-        "dtw": 109,
-        "toggle_lights": 201,
-        "wpt_lon": 113,
-        "distance_reset": 116,
-        "server_error": 2,
-        "distance_total": 115,
-        "screen": 0,
-        "lon": 102,
-        "cog": 104,
-        "waypoint": 111,
-        "anchor_watch": 202,
-        "wind_angle": 108,
-        "wind_speed": 107,
-        "depth": 106,
-        "boat_speed": 105,
-        "menu": 1,
-        "btw": 110,
-        "temp": 114,
-        "sog": 103,
-        "drift": 117
-    },
-    "longName": "Boat Remote Plus",
-    "versionCode": 1,
-    "shortName": "Boat Remote +",
-    "companyName": "Code With a Smile",
-    "uuid": "57d2c4e1-5799-4d2d-8ae1-b22822da119b",
     "resources": {
         "media": [
             {
-                "menuIcon": true,
                 "type": "png",
+                "file": "images/icon 24x28.png",
                 "name": "icon_small",
-                "file": "images/icon 24x28.png"
+                "menuIcon": true
             }
         ]
+    },
+    "versionCode": 1,
+    "shortName": "Boat Remote +",
+    "capabilities": [
+        "configurable"
+    ],
+    "versionLabel": "0.1.0",
+    "longName": "Boat Remote Plus",
+    "uuid": "57d2c4e1-5799-4d2d-8ae1-b22822da119b",
+    "appKeys": {
+        "lon": 102,
+        "wind_angle": 108,
+        "btw": 110,
+        "server_error": 2,
+        "wpt_lon": 113,
+        "lat": 101,
+        "wind_speed": 107,
+        "distance_reset": 116,
+        "wpt_lat": 112,
+        "cog": 104,
+        "toggle_lights": 201,
+        "screen": 0,
+        "drift": 117,
+        "menu": 1,
+        "dtw": 109,
+        "sog": 103,
+        "waypoint": 111,
+        "temp": 114,
+        "boat_speed": 105,
+        "anchor_watch": 202,
+        "distance_total": 115,
+        "depth": 106
+    },
+    "companyName": "Code With a Smile",
+    "watchapp": {
+        "watchface": false
     }
 }
