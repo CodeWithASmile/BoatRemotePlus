@@ -1,47 +1,49 @@
 {
-    "versionCode": 1,
-    "versionLabel": "0.1.0",
-    "shortName": "Boat Remote",
+    "appKeys": {
+        "anchor_watch": 202,
+        "boat_speed": 105,
+        "btw": 110,
+        "cog": 104,
+        "depth": 106,
+        "distance_reset": 116,
+        "distance_total": 115,
+        "drift": 117,
+        "dtw": 109,
+        "lat": 101,
+        "location_status": 3,
+        "lon": 102,
+        "menu": 1,
+        "screen": 0,
+        "server_error": 2,
+        "sog": 103,
+        "temp": 114,
+        "waypoint": 111,
+        "wind_angle": 108,
+        "wind_speed": 107,
+        "wpt_lat": 112,
+        "wpt_lon": 113
+    },
+    "capabilities": [
+        "location",
+        "configurable"
+    ],
+    "companyName": "Code With a Smile",
+    "longName": "Boat Remote",
     "resources": {
         "media": [
             {
-                "menuIcon": true,
-                "type": "png",
                 "file": "images/icon 24x28.png",
-                "name": "icon_small"
+                "menuIcon": true,
+                "name": "icon_small",
+                "type": "png"
             }
         ]
     },
-    "appKeys": {
-        "wpt_lat": 112,
-        "btw": 110,
-        "drift": 117,
-        "screen": 0,
-        "wpt_lon": 113,
-        "waypoint": 111,
-        "temp": 114,
-        "lon": 102,
-        "cog": 104,
-        "lat": 101,
-        "anchor_watch": 202,
-        "wind_speed": 107,
-        "menu": 1,
-        "distance_reset": 116,
-        "dtw": 109,
-        "distance_total": 115,
-        "wind_angle": 108,
-        "depth": 106,
-        "sog": 103,
-        "boat_speed": 105,
-        "server_error": 2
-    },
-    "longName": "Boat Remote",
-    "uuid": "57d2c4e1-5799-4d2d-8ae1-b22822da119b",
-    "capabilities": [
-        "configurable"
-    ],
+    "shortName": "Boat Remote",
+    "uuid": "57d2c4e1-5799-4d2d-8ae1-b22822da119c",
+    "versionCode": 1,
+    "versionLabel": "0.1.0",
     "watchapp": {
         "watchface": false
-    },
-    "companyName": "Code With a Smile"
+    }
 }

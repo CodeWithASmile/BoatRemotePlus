@@ -33,13 +33,14 @@ function getURL(){
 	return url;
 }
 
-function sendPOST(command){
+function sendPOST(command, params){
 	var req = new XMLHttpRequest();
 	var url = getURL();
 	url = url + '/' + command;
-	//console.log("url = " + url);
+	console.log("POST url = " + url);
+	console.log("POST params = " + params);
     req.open('POST', url, true);
-	req.send(null);
+	req.send(params);
 }
 
 function parseResults(current_screen, result){
@@ -76,16 +77,32 @@ function parseResults(current_screen, result){
 	
 }
 
+function locationSuccess(pos) {
+  var coordinates = pos.coords;
+  sendPOST("set_anchor_watch","lat=" + coordinates.latitude + "&lon=" + coordinates.longitude);
+	Pebble.sendAppMessage({"location_status": "1"});
+}
+
+function locationError(err) {
+  console.warn('location error (' + err.code + '): ' + err.message);
+  sendPOST("set_anchor_watch",null);
+  Pebble.sendAppMessage({"location_status": "2"});
+}
+
+var locationOptions = { "timeout": 5000, "maximumAge": 5000 }; 
+
 
 Pebble.addEventListener("appmessage",
 	function(recMessage) {
-		console.log("received message: " + JSON.stringify(recMessage.payload, null, 2));
+		//console.log("received message: " + JSON.stringify(recMessage.payload, null, 2));
 		if (recMessage.payload.anchor_watch){
+			console.log("received anchor watch message");
 			if (recMessage.payload.anchor_watch == 1){
-				sendPOST("set_anchor_watch");
+				window.navigator.geolocation.getCurrentPosition(locationSuccess, locationError, locationOptions);
 			}
 			else{
-				sendPOST("reset_anchor_watch");
+				console.log("resetting anchor watch");
+				sendPOST("reset_anchor_watch",null);
 			}
 		}
 		var current_screen = recMessage.payload.screen;
@@ -98,7 +115,7 @@ Pebble.addEventListener("appmessage",
 			//console.log("Status of response is " + req.status);
 		};
 		req.onload = function(recData) {
-			console.log("received data");
+			//console.log("received data");
 			if (req.readyState == 4 && req.status == 200) {
 				clearTimeout(myTimeout);
 				var result = JSON.parse(req.responseText);

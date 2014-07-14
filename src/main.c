@@ -1,6 +1,7 @@
 #include <pebble.h>
 #include <inttypes.h>
 #include "message.h"
+#include "popup.h"
 #include "gps.h"
 #include "sailing.h"
 #include "navigation.h"
@@ -13,6 +14,7 @@
 #define VIEW_WINDOW_COUNT 6
 
 Window* message_window;
+Window* popup_window;
 Window* menu_window;
 Window* view_windows [VIEW_WINDOW_COUNT];
 
@@ -45,6 +47,11 @@ void show_message(char message[]){
 	current_screen = SCREEN_MESSAGE_KEY;
 }
 
+void show_popup(char popup[]){
+	window_stack_push(popup_window, true);
+	set_popup(popup);
+}
+
 void load_menu(){
 	window_stack_pop(true);
 	window_stack_push(menu_window, true);
@@ -74,7 +81,6 @@ static void in_received_handler(DictionaryIterator *iter, void *context) {
 	  } 
 	  return;
   }
-	
   else{
 	  switch(current_screen){
 		case SCREEN_MESSAGE_KEY:
@@ -97,6 +103,15 @@ static void in_received_handler(DictionaryIterator *iter, void *context) {
 		   break;
 		case SCREEN_ANCHOR_WATCH_KEY:
 		   update_anchor_watch_fields(iter);
+		   Tuple *location_status_tuple = dict_find(iter, LOCATION_STATUS_KEY); 
+		   if (location_status_tuple){
+			   if (atoi(location_status_tuple->value->cstring) == 1){
+				   show_popup("Attempting to set anchor location using phone GPS");
+			   }
+			   else{
+			       show_popup("Unable to set anchor location using phone GPS, attempting to use boat location");
+			   }
+		   }
 		   break;
 	  }
   }
@@ -114,6 +129,7 @@ static void out_failed_handler(DictionaryIterator *failed, AppMessageResult reas
 }
 
 static void send_message(int key, int value) {
+	  //APP_LOG(APP_LOG_LEVEL_DEBUG, "Sending message %d %d", key, value);
       Tuplet tuplet = TupletInteger(key, value);
       DictionaryIterator *iter;
       app_message_outbox_begin(&iter);
@@ -160,12 +176,13 @@ void select_handler(ClickRecognizerRef recognizer, void *context){
 }
 
 void long_select_handler(ClickRecognizerRef recognizer, void *context){
-	if (current_screen == SCREEN_ANCHOR_WATCH_KEY){
-		send_message(SET_ANCHOR_WATCH_KEY,0);
-	}
 }
 
 void long_select_handler_release(ClickRecognizerRef recognizer, void *context){
+	if (current_screen == SCREEN_ANCHOR_WATCH_KEY){
+		send_message(SET_ANCHOR_WATCH_KEY,2);
+		APP_LOG(APP_LOG_LEVEL_DEBUG, "Resetting Anchor");
+	}
 }
 
 void config_provider(void *context) {
@@ -260,6 +277,14 @@ static void init(void) {
         .unload = message_window_unload
       });
 	  window_set_click_config_provider(message_window, message_config_provider);
+	
+	  popup_window = window_create();
+      window_set_background_color(popup_window, GColorBlack);
+      window_set_fullscreen(popup_window, true);
+      window_set_window_handlers(popup_window, (WindowHandlers) {
+        .load = popup_window_load,
+        .unload = popup_window_unload
+      });
 	  	
 	  menu_window = window_create();
       // Setup the window handlers
