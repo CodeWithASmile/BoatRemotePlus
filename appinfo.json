@@ -19,6 +19,7 @@
     "uuid": "57d2c4e1-5799-4d2d-8ae1-b22822da119b",
     "appKeys": {
         "lon": 102,
+        "location_status": 3,
         "wind_angle": 108,
         "btw": 110,
         "server_error": 2,

@@ -1,6 +1,7 @@
 #include <pebble.h>
 #include <inttypes.h>
 #include "message.h"
+#include "popup.h"
 #include "gps.h"
 #include "sailing.h"
 #include "navigation.h"
@@ -24,6 +25,7 @@ Window* menu_windows[MAX_WINDOW_COUNT];
 
 //int view_windows_enable[VIEW_WINDOW_COUNT] = {1,1,1,1,1,1};
 //int control_windows_enable[CONTROL_WINDOW_COUNT] = {1};
+Window* popup_window;
 
 int current_screen;
 int last_screen;
@@ -83,6 +85,9 @@ void load_menu(int menu){
 			main_menu_set_selected(current_menu);
 	}
 	current_menu = menu;
+void show_popup(char popup[]){
+	window_stack_push(popup_window, true);
+	set_popup(popup);
 }
 
 void load_current_menu(){
@@ -138,6 +143,16 @@ static void in_received_handler(DictionaryIterator *iter, void *context) {
 				   update_anchor_watch_fields(iter);
 				   break;
 			  }
+		   Tuple *location_status_tuple = dict_find(iter, LOCATION_STATUS_KEY); 
+		   if (location_status_tuple){
+			   if (atoi(location_status_tuple->value->cstring) == 1){
+				   show_popup("Attempting to set anchor location using phone GPS");
+			   }
+			   else{
+			       show_popup("Unable to set anchor location using phone GPS, attempting to use boat location");
+			   }
+		   }
+		   break;
 	  }
   }
 }
@@ -154,6 +169,7 @@ static void out_failed_handler(DictionaryIterator *failed, AppMessageResult reas
 }
 
 static void send_message(int key, int value) {
+	  //APP_LOG(APP_LOG_LEVEL_DEBUG, "Sending message %d %d", key, value);
       Tuplet tuplet = TupletInteger(key, value);
       DictionaryIterator *iter;
       app_message_outbox_begin(&iter);
@@ -233,6 +249,10 @@ void load_main_menu(ClickRecognizerRef recognizer, void *context){
 }
 
 void long_select_handler_release(ClickRecognizerRef recognizer, void *context){
+	if (current_screen == SCREEN_ANCHOR_WATCH_KEY){
+		send_message(SET_ANCHOR_WATCH_KEY,2);
+		APP_LOG(APP_LOG_LEVEL_DEBUG, "Resetting Anchor");
+	}
 }
 
 void view_window_config_provider(void *context) {
@@ -367,6 +387,15 @@ static void init(void) {
 	  menu_windows[CONTROL_MENU] = w;
 	  
 	  w = window_create();
+	
+	  popup_window = window_create();
+      window_set_background_color(popup_window, GColorBlack);
+      window_set_fullscreen(popup_window, true);
+      window_set_window_handlers(popup_window, (WindowHandlers) {
+        .load = popup_window_load,
+        .unload = popup_window_unload
+      });
+	  	
       // Setup the window handlers
 	  window_set_window_handlers(w, (WindowHandlers){
     	.load = main_menu_window_load,
