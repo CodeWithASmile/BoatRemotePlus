@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html class="ui-mobile"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"><!-- base href="http://www.codewithasmile.co.uk/pebble/configuration.html" -->
+    <title>Boat Remote</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="configuration_files/jquery.css">
+    <script src="configuration_files/jquery-1.js"></script>
+    <script src="configuration_files/jquery.js"></script>
+	    <script>
+		
+		function gup( name ){
+			name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");  
+			var regexS = "[\\?&]"+name+"=([^&#]*)";  
+			var regex = new RegExp( regexS );  
+			var results = regex.exec( window.location.href ); 
+			 if( results == null )    return "";  
+		else    return results[1];}
+	
+	   function loadValues() { 
+	     $("#server").val(gup("server"));
+		 $("#port").val(gup("port"));
+		 $("#phone_gps").val(gup("phone_gps"));
+		}
+		
+      function saveOptions() {
+        var options = {
+          'server': $("#server").val(),
+		  'port': $("#port").val(),
+		  'phone_gps': $("#phone_gps").val(),
+        }
+        return options;
+      }
+
+      $().ready(function() {
+        $("#b-submit").click(function() {
+          console.log("Submit");
+
+          var location = "pebblejs://close#" + encodeURIComponent(JSON.stringify(saveOptions()));
+          console.log("Warping to: " + location);
+          console.log(location);
+          document.location = location;
+        });
+
+      });
+    </script>
+
+  </head>
+  <body class="ui-mobile-viewport ui-overlay-c" onload="loadValues()">
+    <div style="min-height: 678px;" tabindex="0" data-url="main" data-role="page" id="main">
+      <div role="banner" data-role="header">
+        <h1 aria-level="1" role="heading" class="ui-title">Boat Remote</h1>
+      </div>
+
+      <div role="main" data-role="content">
+	  
+		<div>
+			This pebble app requires companion software to function. For more information and to download the software please go to http://www.codewithasmile.co.uk/boat/boat-remote.
+		</div>
+
+        <div data-role="fieldcontain">
+			<label for="server">Server:</label>
+			<textarea cols="40" rows="8" name="server" id="server"></textarea>
+		</div>
+		
+		<div data-role="fieldcontain">
+			<label for="port">Port:</label>
+			<textarea cols="40" rows="8" name="port" id="port"></textarea>
+		</div>
+		
+		<div data-role="fieldcontain">
+			<label class="ui-input-radio" for="phone_gps">Use Phone GPS For Anchor Location:</label>
+			<select name="phone_gps" id="phone_gps" data-role="slider">
+            <option value="no">No</option>
+            <option value="yes">Yes</option>
+		</div>
+
+        <div>
+			<fieldset>
+				<div>
+					<div aria-disabled="false" data-disabled="false" data-theme="a" data-wrapperels="span" data-iconshadow="true" data-shadow="true" data-corners="true">
+						<span>
+							<span>Submit</span>
+						</span>
+						<button data-disabled="false" type="submit" data-theme="a" id="b-submit">Submit</button>
+					</div>
+				</div>
+            </fieldset>
+          </div>
+        </div>
+      </div>
+    
+  
+
+<div><span></span><h1>loading</h1></div></body></html>
