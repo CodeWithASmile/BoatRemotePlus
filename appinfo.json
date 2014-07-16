@@ -1,48 +1,50 @@
 {
+    "appKeys": {
+        "anchor_watch": 202,
+        "boat_speed": 105,
+        "btw": 110,
+        "cog": 104,
+        "depth": 106,
+        "distance_reset": 116,
+        "distance_total": 115,
+        "drift": 117,
+        "dtw": 109,
+        "lat": 101,
+        "location_status": 3,
+        "lon": 102,
+        "menu": 1,
+        "screen": 0,
+        "server_error": 2,
+        "sog": 103,
+        "temp": 114,
+        "toggle_lights": 201,
+        "waypoint": 111,
+        "wind_angle": 108,
+        "wind_speed": 107,
+        "wpt_lat": 112,
+        "wpt_lon": 113
+    },
+    "capabilities": [
+        "location",
+        "configurable"
+    ],
+    "companyName": "Code With a Smile",
+    "longName": "Boat Remote Plus",
+    "projectType": "native",
     "resources": {
         "media": [
             {
-                "type": "png",
                 "file": "images/icon 24x28.png",
+                "menuIcon": true,
                 "name": "icon_small",
-                "menuIcon": true
+                "type": "png"
             }
         ]
     },
-    "versionCode": 1,
     "shortName": "Boat Remote +",
-    "capabilities": [
-        "configurable"
-    ],
-    "versionLabel": "0.1.0",
-    "longName": "Boat Remote Plus",
     "uuid": "57d2c4e1-5799-4d2d-8ae1-b22822da119b",
-    "appKeys": {
-        "lon": 102,
-        "location_status": 3,
-        "wind_angle": 108,
-        "btw": 110,
-        "server_error": 2,
-        "wpt_lon": 113,
-        "lat": 101,
-        "wind_speed": 107,
-        "distance_reset": 116,
-        "wpt_lat": 112,
-        "cog": 104,
-        "toggle_lights": 201,
-        "screen": 0,
-        "drift": 117,
-        "menu": 1,
-        "dtw": 109,
-        "sog": 103,
-        "waypoint": 111,
-        "temp": 114,
-        "boat_speed": 105,
-        "anchor_watch": 202,
-        "distance_total": 115,
-        "depth": 106
-    },
-    "companyName": "Code With a Smile",
+    "versionCode": 1,
+    "versionLabel": "0.1.0",
     "watchapp": {
         "watchface": false
     }

@@ -65,6 +65,11 @@ void show_message(char message[]){
 	current_screen = SCREEN_MESSAGE_KEY;
 }
 
+void show_popup(char popup[]){
+	window_stack_push(popup_window, true);
+	set_popup(popup);
+}
+
 void load_menu(int menu){
 	APP_LOG(APP_LOG_LEVEL_DEBUG, "Current menu %d", current_menu);
 	APP_LOG(APP_LOG_LEVEL_DEBUG, "New menu %d", menu);
@@ -85,9 +90,6 @@ void load_menu(int menu){
 			main_menu_set_selected(current_menu);
 	}
 	current_menu = menu;
-void show_popup(char popup[]){
-	window_stack_push(popup_window, true);
-	set_popup(popup);
 }
 
 void load_current_menu(){
@@ -141,18 +143,17 @@ static void in_received_handler(DictionaryIterator *iter, void *context) {
 				   break;
 				case SCREEN_ANCHOR_WATCH_KEY:
 				   update_anchor_watch_fields(iter);
-				   break;
+	     		   Tuple *location_status_tuple = dict_find(iter, LOCATION_STATUS_KEY); 
+		   		   if (location_status_tuple){
+			           if (atoi(location_status_tuple->value->cstring) == 1){
+				           show_popup("Attempting to set anchor location using phone GPS");
+			           }
+			           else{
+			               show_popup("Unable to set anchor location using phone GPS, attempting to use boat location");
+			           }
+		           }
+		           break;
 			  }
-		   Tuple *location_status_tuple = dict_find(iter, LOCATION_STATUS_KEY); 
-		   if (location_status_tuple){
-			   if (atoi(location_status_tuple->value->cstring) == 1){
-				   show_popup("Attempting to set anchor location using phone GPS");
-			   }
-			   else{
-			       show_popup("Unable to set anchor location using phone GPS, attempting to use boat location");
-			   }
-		   }
-		   break;
 	  }
   }
 }
@@ -227,6 +228,14 @@ void select_handler(ClickRecognizerRef recognizer, void *context){
 }
 
 void long_select_handler(ClickRecognizerRef recognizer, void *context){
+}
+
+void load_main_menu(ClickRecognizerRef recognizer, void *context){
+	last_menu = current_menu;
+	load_menu(MAIN_MENU);
+}
+
+void long_select_handler_release(ClickRecognizerRef recognizer, void *context){
 	switch(current_menu){
 		/*case CONTROL_MENU:
 			switch(current_screen){
@@ -237,21 +246,9 @@ void long_select_handler(ClickRecognizerRef recognizer, void *context){
 		case VIEW_MENU:
 			switch(current_screen){
 				case SCREEN_ANCHOR_WATCH_KEY:
-				send_message(SET_ANCHOR_WATCH_KEY,0);
+				send_message(SET_ANCHOR_WATCH_KEY,2);
 				break;
 			}
-	}
-}
-
-void load_main_menu(ClickRecognizerRef recognizer, void *context){
-	last_menu = current_menu;
-	load_menu(MAIN_MENU);
-}
-
-void long_select_handler_release(ClickRecognizerRef recognizer, void *context){
-	if (current_screen == SCREEN_ANCHOR_WATCH_KEY){
-		send_message(SET_ANCHOR_WATCH_KEY,2);
-		APP_LOG(APP_LOG_LEVEL_DEBUG, "Resetting Anchor");
 	}
 }
 
@@ -365,6 +362,14 @@ static void init(void) {
         .unload = message_window_unload
       });
 	  window_set_click_config_provider(message_window, message_window_config_provider);
+	
+	  popup_window = window_create();
+      window_set_background_color(popup_window, GColorBlack);
+      window_set_fullscreen(popup_window, true);
+      window_set_window_handlers(popup_window, (WindowHandlers) {
+        .load = popup_window_load,
+        .unload = popup_window_unload
+      });
 	  	
 	  w = window_create();
       // Setup the window handlers
@@ -386,16 +391,7 @@ static void init(void) {
 	  control_menu_set_back_button_function(load_main_menu);
 	  menu_windows[CONTROL_MENU] = w;
 	  
-	  w = window_create();
-	
-	  popup_window = window_create();
-      window_set_background_color(popup_window, GColorBlack);
-      window_set_fullscreen(popup_window, true);
-      window_set_window_handlers(popup_window, (WindowHandlers) {
-        .load = popup_window_load,
-        .unload = popup_window_unload
-      });
-	  	
+	  w = window_create();	  	
       // Setup the window handlers
 	  window_set_window_handlers(w, (WindowHandlers){
     	.load = main_menu_window_load,
