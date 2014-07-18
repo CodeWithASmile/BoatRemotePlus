@@ -6,10 +6,12 @@ Pebble.addEventListener("ready",
 
 Pebble.addEventListener("showConfiguration", function() {
 	console.log("showing configuration");
-	var config_url = "http://www.codewithasmile.co.uk/pebble/configuration.html";
+	var config_url = "http://rawgit.com/CodeWithASmile/BoatRemote/master/configuration.html";
 	var server = localStorage.getItem("server");
 	var port = localStorage.getItem("port");
-	config_url = config_url + "?server=" + (server || "") + "&port=" + (port  || "");
+	var phone_gps = localStorage.getItem("phone_gps");
+	config_url = config_url + "?server=" + (server || "") + "&port=" + 
+		(port  || "") + "&phone_gps=" + (phone_gps  || "");
 	Pebble.openURL(config_url);
 });
 
@@ -19,7 +21,8 @@ Pebble.addEventListener("webviewclosed", function(e) {
 	var options = JSON.parse(decodeURIComponent(e.response));
 	localStorage.clear();
 	localStorage.setItem("server", options.server);
-	localStorage.setItem("port", options.port);	
+	localStorage.setItem("port", options.port);
+	localStorage.setItem("phone_gps", options.phone_gps);
 	console.log("Options = " + JSON.stringify(options));
 });
 
@@ -98,7 +101,14 @@ Pebble.addEventListener("appmessage",
 		if (recMessage.payload.anchor_watch){
 			console.log("received anchor watch message");
 			if (recMessage.payload.anchor_watch == 1){
-				window.navigator.geolocation.getCurrentPosition(locationSuccess, locationError, locationOptions);
+				var phone_gps = localStorage.getItem("phone_gps");
+				if (phone_gps == "yes"){
+					window.navigator.geolocation.getCurrentPosition(locationSuccess, locationError, locationOptions);
+				}
+				else{
+                    sendPOST("set_anchor_watch",null);
+					Pebble.sendAppMessage({"location_status": "2"});
+				}
 			}
 			else{
 				console.log("resetting anchor watch");
