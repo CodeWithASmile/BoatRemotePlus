@@ -9,7 +9,7 @@ static TextLayer *distance_reset_label_layer;
 
 #define LOG_NUM_FIELDS 3
 
-int logFields [LOG_NUM_FIELDS] = {BOAT_TEMP_KEY,BOAT_DISTANCE_TOTAL_KEY,BOAT_DISTANCE_RESET_KEY};
+int logFields [LOG_NUM_FIELDS] = {BOAT_DISTANCE_TOTAL_KEY,BOAT_DISTANCE_RESET_KEY,BOAT_TEMP_KEY};
 TextLayer* logFieldLayers [LOG_NUM_FIELDS];
 
 void log_window_load(Window *window) {

@@ -12,6 +12,7 @@ Pebble.addEventListener("showConfiguration", function() {
 	var phone_gps = localStorage.getItem("phone_gps");
 	config_url = config_url + "?server=" + (server || "") + "&port=" + 
 		(port  || "") + "&phone_gps=" + (phone_gps  || "");
+	console.log(config_url);
 	Pebble.openURL(config_url);
 });
 
