@@ -43,7 +43,7 @@
     "shortName": "Boat Remote",
     "uuid": "57d2c4e1-5799-4d2d-8ae1-b22822da119c",
     "versionCode": 1,
-    "versionLabel": "0.1.0",
+    "versionLabel": "0.1",
     "watchapp": {
         "watchface": false
     }

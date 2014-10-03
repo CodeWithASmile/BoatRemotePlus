@@ -21,7 +21,7 @@ void log_window_load(Window *window) {
 	  layer_add_child(window_layer, text_layer_get_layer(distance_total_label_layer));
 	
 	  t = create_field_layer(12);
-      text_layer_set_font(t, fonts_get_system_font(FONT_KEY_BITHAM_30_BLACK));
+      text_layer_set_font(t, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
       layer_add_child(window_layer, text_layer_get_layer(t));
 	  logFieldLayers[0] = t;
 	
@@ -30,7 +30,7 @@ void log_window_load(Window *window) {
       layer_add_child(window_layer, text_layer_get_layer(distance_reset_label_layer));
 	
 	  t = create_field_layer(57);
-      text_layer_set_font(t, fonts_get_system_font(FONT_KEY_BITHAM_30_BLACK));
+      text_layer_set_font(t, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
       layer_add_child(window_layer, text_layer_get_layer(t));
 	  logFieldLayers[1] = t;
 	
