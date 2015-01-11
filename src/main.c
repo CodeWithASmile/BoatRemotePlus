@@ -9,13 +9,14 @@
 #include "log.h"
 #include "anchor_watch.h"
 #include "lights.h"
+#include "heater.h"
 #include "view_menu.h"
 #include "control_menu.h"
 #include "main_menu.h"
 #include "keys.h"
 	
 #define VIEW_WINDOW_COUNT 6
-#define CONTROL_WINDOW_COUNT 1
+#define CONTROL_WINDOW_COUNT 2
 #define MAX_WINDOW_COUNT 6 //Max of two constants above
 #define MENU_WINDOW_COUNT 3
 
@@ -48,7 +49,8 @@ enum ViewScreenKey {
 };
 
 enum ControlScreenKey {
-  SCREEN_LIGHTS_KEY = 0
+  SCREEN_LIGHTS_KEY = 0,
+  SCREEN_HEATER_KEY = 1
 };
 
 enum MenuKey {
@@ -218,6 +220,11 @@ void select_handler(ClickRecognizerRef recognizer, void *context){
 				send_message(TOGGLE_LIGHTS_KEY,1);
 				break;
 			}
+			switch(current_screen){
+				case SCREEN_HEATER_KEY:
+				send_message(TOGGLE_HEATER_KEY,1);
+				break;
+			}
 		case VIEW_MENU:
 			switch(current_screen){
 				case SCREEN_ANCHOR_WATCH_KEY:
@@ -353,6 +360,15 @@ static void init(void) {
 	  window_set_click_config_provider(w, control_window_config_provider);
 	  data_windows[CONTROL_MENU][SCREEN_LIGHTS_KEY] = w;
 	
+	  w = window_create();
+      window_set_background_color(w, GColorBlack);
+      window_set_fullscreen(w, true);
+      window_set_window_handlers(w, (WindowHandlers) {
+        .load = heater_window_load,
+        .unload = heater_window_unload
+      });
+	  window_set_click_config_provider(w, control_window_config_provider);
+	  data_windows[CONTROL_MENU][SCREEN_HEATER_KEY] = w;
 	
 	  message_window = window_create();
       window_set_background_color(message_window, GColorBlack);

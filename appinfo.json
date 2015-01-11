@@ -17,6 +17,7 @@
         "server_error": 2,
         "sog": 103,
         "temp": 114,
+        "toggle_heater": 203,
         "toggle_lights": 201,
         "waypoint": 111,
         "wind_angle": 108,

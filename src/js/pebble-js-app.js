@@ -119,6 +119,9 @@ Pebble.addEventListener("appmessage",
 				sendPOST("reset_anchor_watch",null);
 			}
 		}
+		else if (recMessage.payload.toggle_heater){
+			sendPOST("toggle_heater");
+		}
 		var current_screen = recMessage.payload.screen;
 		var req = new XMLHttpRequest();
 		var url = getURL() +'/watch';

@@ -25,7 +25,8 @@ enum Keys
   BOAT_DRIFT_KEY = 117,
 	  
   TOGGLE_LIGHTS_KEY = 201,
-  SET_ANCHOR_WATCH_KEY = 202
+  SET_ANCHOR_WATCH_KEY = 202,
+  TOGGLE_HEATER_KEY = 203
 };
 
 //extern enum Keys keys;

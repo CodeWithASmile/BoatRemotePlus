@@ -3,7 +3,7 @@
 
 #define NUM_CONTROL_MENU_SECTIONS 1
 #define NUM_CONTROL_MENU_ICONS 0
-#define NUM_CONTROL_MENU_ITEMS 1
+#define NUM_CONTROL_MENU_ITEMS 2
 	
 MenuLayer *control_menu_layer;
 
@@ -41,6 +41,11 @@ void control_menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, Menu
       switch (cell_index->row) {
         case 0:
           menu_cell_title_draw(ctx, cell_layer, "Lights");
+          break;
+	  }
+	  switch (cell_index->row) {
+        case 1:
+          menu_cell_title_draw(ctx, cell_layer, "Heater");
           break;
 	  }
   }
@@ -87,7 +92,7 @@ window_set_click_config_provider_with_context(window, control_new_ccp, menu_laye
 
 // This initializes the menu upon window load
 void control_menu_window_load(Window *me) {
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "Loading View Menu Layer");
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "Loading Control Menu Layer");
   
   Layer *window_layer = window_get_root_layer(me);
 	
